@@ -53,7 +53,7 @@ object Main extends App {
     
     // Configure our window
     glfwDefaultWindowHints()
-    glfwWindowHint(GLFW_VISIBLE, GL_FALSE)
+    glfwWindowHint(GLFW_VISIBLE, GL_FALSE) // hide window for now
     glfwWindowHint(GLFW_RESIZABLE, GL_TRUE)
 
     // // Set core profile
