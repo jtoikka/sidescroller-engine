@@ -134,6 +134,15 @@ class SpatialGrid2D[T <: Spatial](
 		r
 	}
 
+/**
+  * Runs an operation on every element, and returns a flat Vector.
+  */
+	def flatMap[T2](op: T => T2): Vector[T2] = {
+		grid.map(cell => {
+			cell map (op(_))
+		}).flatten.toVector
+	}
+
 
 /** 
   * Returns the grid index the point resides in.

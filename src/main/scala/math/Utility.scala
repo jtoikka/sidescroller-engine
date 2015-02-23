@@ -9,4 +9,13 @@ object Utility {
 			0, 0, 0, 1
 		)
 	}
+
+	def scaleMatrix(scale: Vec3): Mat4 = {
+		Mat4(
+			scale.x, 0, 0, 0,
+			0, scale.y, 0, 0,
+			0, 0, scale.z, 0,
+			0, 0, 0, 1
+		)
+	}
 }
