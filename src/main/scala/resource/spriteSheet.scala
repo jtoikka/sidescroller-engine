@@ -10,7 +10,14 @@ class SpriteSheet(
 	val texture: String, 
 	val width: Int, val height: Int, 
 	val sprites: Map[String, Sprite]) extends Resource {
-  def apply(spriteId: String) = sprites(spriteId)
+  
+  def apply(spriteId: String): Sprite = {
+  	if (sprites.contains(spriteId)) {
+  		sprites(spriteId)
+  	} else {
+  		throw new Exception("Sprite " + spriteId + " not found.")
+  	}
+  }
 }
 
 /* Resource loading --------------------------------------------------------- */

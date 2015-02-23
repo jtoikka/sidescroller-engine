@@ -49,21 +49,18 @@ class Renderer(screenWidth: Int, screenHeight: Int) {
 		scene.entities foreach {renderEntity(_, resourceManager, meshShaderProgram)}
 
 		setProgram(spriteShaderProgram)
-		setCameraMatrix(scene.camera, spriteShaderProgram)
+		setCameraMatrix2D(scene.camera, spriteShaderProgram)
 
-		renderSpritesToScreen(resourceManager)
+		renderSpritesToScreen(resourceManager, spriteShaderProgram)
 	}
 
 	def setProgram(program: ShaderProgram) = {
 		glUseProgram(program.id)
-		program.attributes.foreach { case (name, (id, size)) =>
-			glVertexAttribPointer(id, size, GL_FLOAT, false, NumBytesFloat * 8, 0)
-		}
 	}
 
 	def setCameraMatrix(camera: Entity, program: ShaderProgram) = {
     camera(CameraComp) match {
-      case Some(CameraComponent(zNear, zFar, width, height,orthographic)) => {
+      case Some(CameraComponent(zNear, zFar, width, height, orthographic)) => {
         val camLeft = camera.position.x - width / 2.0f
         val camRight = camera.position.x + width / 2.0f
         val camUp = camera.position.y - height / 2.0f
@@ -80,7 +77,34 @@ class Renderer(screenWidth: Int, screenHeight: Int) {
 		    glUniformMatrix4(
 		      program.uniforms("cameraToClipMatrix"), false, camClipBuffer)
       }
-      case _ => println("Camera missing camera component")
+      case _ => {
+      	println("Camera missing camera component")
+      }
+    }
+	}
+
+	def setCameraMatrix2D(camera: Entity, program: ShaderProgram) = {
+    camera(CameraComp) match {
+      case Some(CameraComponent(zNear, zFar, width, height, orthographic)) => {
+        val camLeft = camera.position.x - width / 2.0f
+        val camRight = camera.position.x + width / 2.0f
+        val camUp = camera.position.y - height / 2.0f
+        val camDown = camera.position.y + height / 2.0f
+
+        // TODO: Add perspective projection
+        val cameraToClip = Camera.orthographicProjection3(
+			    camLeft, camRight, camUp, camDown
+			  )
+	      val camClipBuffer = BufferUtils.createFloatBuffer(cameraToClip.size)
+		    camClipBuffer.put(cameraToClip.asArray)
+		    camClipBuffer.flip()
+
+		    glUniformMatrix3(
+		      program.uniforms("cameraToClipMatrix"), false, camClipBuffer)
+      }
+      case _ => {
+      	println("Camera missing camera component")
+      }
     }
 	}
 
@@ -106,15 +130,31 @@ class Renderer(screenWidth: Int, screenHeight: Int) {
         glUniformMatrix4(
         	program.uniforms("modelToCameraMatrix"), false, transBuffer)
 
-        renderMesh(resourceManager.getMesh(meshId))
+        renderMesh(resourceManager.getMesh(meshId), program)
 			}
 			case _ => 
 		}
+		entity(SpriteComp) match {
+			case Some(SpriteComponent(sprite, spriteSheet)) => {
+				renderSprite(entity, resourceManager)
+			}
+			case _ =>
+		}
 	}
 
-	def renderMesh(mesh: Mesh) = {
+	def renderMesh(mesh: Mesh, program: ShaderProgram) = {
 		glBindBuffer(GL_ARRAY_BUFFER, mesh.vertexBufferId)
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.indexBufferId)
+
+    glVertexAttribPointer(
+	  	program.attributes("position"),
+	  	3, GL_FLOAT, false, NumBytesFloat * 8, 0)
+    glVertexAttribPointer(
+	  	program.attributes("position"),
+	  	3, GL_FLOAT, false, NumBytesFloat * 8, NumBytesFloat * 3)
+	  glVertexAttribPointer(
+	  	program.attributes("uv"), 
+	  	2, GL_FLOAT, false, NumBytesFloat * 8, NumBytesFloat * 6)
 
     glDrawElements(GL_TRIANGLES, mesh.numIndices, GL_UNSIGNED_SHORT, 0)
 
@@ -139,10 +179,10 @@ class Renderer(screenWidth: Int, screenHeight: Int) {
 				val y2 = entity.position.y - halfHeight
 
 				// Texture coordinates
-        val ux = sprite.x / sheet.width
-        val uy = sprite.y / sheet.height
-        val vx = (sprite.x + sprite.w) / sheet.width
-        val vy = (sprite.y + sprite.h) / sheet.height
+        val ux = sprite.x / sheet.width.toFloat
+        val uy = sprite.y / sheet.height.toFloat
+        val vx = (sprite.x + sprite.w) / sheet.width.toFloat
+        val vy = (sprite.y + sprite.h) / sheet.height.toFloat
 
         if (!spriteMap.contains(spriteSheetId)) {
         	spriteMap(spriteSheetId) = new ArrayBuffer[Float]()
@@ -162,26 +202,39 @@ class Renderer(screenWidth: Int, screenHeight: Int) {
 
 	var spriteVBO = 0
 
-	def renderSpritesToScreen(resourceManager: ResourceManager) = {
+	def renderSpritesToScreen(resourceManager: ResourceManager, program: ShaderProgram) = {
 		spriteMap.foreach {case (spriteSheetId, spriteBuffer) => {
+			println(spriteBuffer)
 			val sheet = resourceManager.getSpriteSheet(spriteSheetId)
 			val tex = sheet.texture
 
       glActiveTexture(GL_TEXTURE0)
       val texIndex = getTexture(tex, resourceManager)
+      val texUnif = glGetUniformLocation(program.id, tex)
+    	glUniform1i(texUnif, texIndex)
       glBindTexture(GL_TEXTURE_2D, texIndex)
+
 
       val verticesBuffer = BufferUtils.createFloatBuffer(spriteBuffer.size)
       verticesBuffer.put(spriteBuffer.toArray)
       verticesBuffer.flip()
 
       if (spriteVBO == 0) spriteVBO = glGenBuffers()
+
       glBindBuffer(GL_ARRAY_BUFFER, spriteVBO)
       glBufferData(GL_ARRAY_BUFFER, verticesBuffer, GL_STREAM_DRAW)
 
-      glDrawArrays(GL_TRIANGLES, 0, spriteBuffer.size)
+      glVertexAttribPointer(
+      	program.attributes("position"),
+      	2, GL_FLOAT, false, NumBytesFloat * 4, 0)
+      glVertexAttribPointer(
+      	program.attributes("uv"), 
+      	2, GL_FLOAT, false, NumBytesFloat * 4, NumBytesFloat * 2)
+
+      glDrawArrays(GL_TRIANGLES, 0, spriteBuffer.size/4)
 
       glBindBuffer(GL_ARRAY_BUFFER, 0)
+      spriteBuffer.clear()
 		}}
 	}
 

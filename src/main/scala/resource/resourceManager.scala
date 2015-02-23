@@ -25,6 +25,7 @@ class ResourceManager(directory: String) {
 	private val ShaderDir = "shaders"
 
 	private def getFilesInFolder[T](folder: String): Map[String, Option[T]]= {
+		println("Getting files in folder: " + folder)
 		val files = new File(directory + folder).
 			listFiles.filter(!_.getName.startsWith("."))
 
@@ -39,16 +40,17 @@ class ResourceManager(directory: String) {
 	private val animation = getFilesInFolder[Animation](AnimationDir)
 	private val prefabs = getFilesInFolder[Entity](PrefabDir)
 	private val stateMachines = getFilesInFolder[StateMachine](StateMachineDir)
-	private val shaderPrograms = getFilesInFolder[ShaderProgram](ShaderDir)
+	private val shaderPrograms = Map[String, ShaderProgram]()
 
 	def getTexture(name: String): Texture = {
-		if (textures.contains(name)) {
-			val texture = textures(name)
+		val fullName = if (name.split('.').size > 1) name else name + ".png"
+		if (textures.contains(fullName)) {
+			val texture = textures(fullName)
 			texture match {
 				case Some(tex) => tex
 				case None => {
-					val tex = loadTexture(directory + TexDir)
-					textures(name) = Some(tex)
+					val tex = loadTexture(directory + TexDir + "/" + fullName)
+					textures(fullName) = Some(tex)
 					tex
 				}
 			}
@@ -58,13 +60,15 @@ class ResourceManager(directory: String) {
 	}
 
 	def getSpriteSheet(name: String): SpriteSheet = {
-		if (spriteSheets.contains(name)) {
-			val spriteSheet = spriteSheets(name)
+		val fullName = if (name.split('.').size > 1) name else name + ".json"
+		if (spriteSheets.contains(fullName)) {
+			val spriteSheet = spriteSheets(fullName)
 			spriteSheet match {
 				case Some(sheet) => sheet
 				case None => {
-					val sheet = loadSpriteSheet(directory + SpriteSheetDir)
-					spriteSheets(name) = Some(sheet)
+					val sheet = 
+						loadSpriteSheet(directory + SpriteSheetDir + "/" + fullName)
+					spriteSheets(fullName) = Some(sheet)
 					sheet
 				}
 			}
@@ -73,58 +77,32 @@ class ResourceManager(directory: String) {
 		}
 	}
 
-	def getShaderProgram(name: String): ShaderProgram = ???
+	def getShaderProgram(name: String): ShaderProgram = {
+		if (shaderPrograms.contains(name)) {
+			shaderPrograms(name)
+		} else {
+			val shaderProgram = ShaderManager.createProgram(
+				directory + ShaderDir + "/" + name + ".vsh",
+				directory + ShaderDir + "/" + name + ".fsh")
+			shaderPrograms(name) = shaderProgram
+			shaderProgram
+		}
+	}
 
-	def getMesh(name: String): Mesh = ???
-
-	private def loadMesh(filePath: String): Mesh = {
-		val lines = Source.fromFile(filePath).getLines().toVector
-
-		var i = 0
-		var line = lines(i)
-
-		var vertices = 0
-		var faces = 0
-		var properties = 0
-
-		while (line != "end_header") {
-			line match {
-				case s if s.startsWith("element vertex") => {
-					vertices = line.split(' ')(2).toInt
+	def getMesh(name: String): Mesh = {
+		if (meshes.contains(name)) {
+			val mesh = meshes(name)
+			mesh match {
+				case Some(m) => m
+				case None => {
+					val m = Mesh(directory + MeshDir + "/" + name)
+					meshes(name) = Some(m)
+					m
 				}
-				case s if s.startsWith("element face") => {
-					faces = line.split(' ')(2).toInt
-				}
-				case s if s.startsWith("property") => {
-					properties += 1
-				}
-				case _ =>
 			}
-			i += 1
-			line = lines(i)
+		} else {
+			throw new ResourceLoadException("Mesh " + name + " does not exist.")
 		}
-
-		i += 1
-		line = lines(i)
-
-		val vertexBuffer = BufferUtils.createFloatBuffer(vertices * properties)
-		val indexBuffer = BufferUtils.createShortBuffer(faces * 3)
-		for (j <- 0 until vertices) {
-			line.split(' ').foreach(s => vertexBuffer.put(s.toFloat))
-			i += 1
-			line = lines(i)
-		}
-		vertexBuffer.flip()
-		for (j <- 0 until faces) {
-			line = lines(i)
-			val split = line.split(' ')
-			for (k <- 1 to split(0).toInt) {
-				indexBuffer.put(split(k).toShort)
-			}
-			i += 1
-		}
-		indexBuffer.flip()
-		new Mesh(vertexBuffer, indexBuffer, faces * 3)
 	}
 
 	private def loadTexture(filePath: String): Texture = {

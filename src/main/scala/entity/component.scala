@@ -12,12 +12,24 @@ object Component {
 	val SpatialComp = classOf[SpatialComponent]
 	val ModelComp = classOf[ModelComponent]
 	val CameraComp = classOf[CameraComponent]
+	val CollisionComp = classOf[CollisionComponent]
+	val PhysicsComp = classOf[PhysicsComponent]
+	val AnimationComp = classOf[AnimationComponent]
+	val InputComp = classOf[InputComponent]
+	val BehaviourComp = classOf[BehaviourComponent]
+	val StateMachineComp = classOf[StateMachineComponent]
 	def bitMask(c: Class[_]): Long = {
 		c match {
-			case SpriteComp => 0x1L
-			case SpatialComp => 0x2L
-			case ModelComp => 0x4L
-			case CameraComp => 0x8L
+			case SpriteComp       => 1L << 0
+			case SpatialComp      => 1L << 1
+			case ModelComp        => 1L << 2
+			case CameraComp       => 1L << 3
+			case CollisionComp    => 1L << 4
+			case PhysicsComp      => 1L << 5
+			case AnimationComp    => 1L << 6
+			case InputComp        => 1L << 7
+			case BehaviourComp    => 1L << 8
+			case StateMachineComp => 1L << 9
 			case _ => -1
 		}
 	}
@@ -63,6 +75,6 @@ case class InputComponent(
 case class BehaviourComponent(
 	behaviours: Vector[Behaviour]) extends Component {}
 
-case class StateMachine(
+case class StateMachineComponent(
 	stateMachine: String,
 	state: String) extends Component {}

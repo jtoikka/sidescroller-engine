@@ -11,10 +11,16 @@ import org.lwjgl.opengl.GL11._
 import org.lwjgl.opengl.GL15._
 import org.lwjgl.system.MemoryUtil._
 
+import scene.Scene
+import factory.EntityFactory
+import math.Vec3
+import render.Renderer
+import resource.ResourceManager
+
 
 object Main extends App {
   val WIDTH = 640
-  val HEIGHT = 480
+  val HEIGHT = 360
   
   val errorCallback = errorCallbackPrint(System.err)
 
@@ -63,7 +69,7 @@ object Main extends App {
     // glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     
     // Create the window
-    window = glfwCreateWindow(WIDTH, HEIGHT, "Hello World!", NULL, NULL)
+    window = glfwCreateWindow(WIDTH, HEIGHT, "Super Game", NULL, NULL)
     if (window == NULL)
       throw new RuntimeException("Failed to create the GLFW window")
     
@@ -97,12 +103,24 @@ object Main extends App {
     glCullFace(GL_BACK)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
+    val testScene = new Scene(
+      1000, 1000, 20, 20, Vector(), 
+      EntityFactory.createCamera(
+        Vec3(0, 0, 0),
+        640, 360, 0.1f, 1000.0f))
+
+    testScene.addEntity(EntityFactory.createPlayer(Vec3(0, 0, 0)))
+
+    val renderer = new Renderer(WIDTH, HEIGHT)
+
+    val resourceManager = new ResourceManager("src/resources/data/")
+
     glfwSetTime(0)
     var timer = 0.0
     var frameCount = 0
     var longestFrame = 0.0
     var frameAccumulator = 0.0
-    while ( glfwWindowShouldClose(window) == GL_FALSE ) {
+    while (glfwWindowShouldClose(window) == GL_FALSE) {
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT) // clear the framebuffer
 
       val delta = glfwGetTime()
@@ -116,6 +134,8 @@ object Main extends App {
       while(frameAccumulator >= FrameDuration) {
         frameAccumulator -= FrameDuration
       }
+
+      renderer.renderScene(testScene, resourceManager)
 
       timer += delta
       frameCount += 1

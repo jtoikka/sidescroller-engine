@@ -1,0 +1,14 @@
+[
+{
+	"name":"walk_right",
+	"frames":[
+		{"name":"walkright1", "duration":0.15}, 
+		{"name":"walkright2", "duration":0.15},
+		{"name":"walkright3", "duration":0.15},
+		{"name":"walkright4", "duration":0.15},
+		{"name":"walkright5", "duration":0.15},
+		{"name":"walkright6", "duration":0.15},
+		{"name":"walkright7", "duration":0.15},
+		{"name":"walkright8", "duration":0.15}
+	],
+}]
