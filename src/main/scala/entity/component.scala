@@ -43,7 +43,8 @@ case class SpatialComponent(
 
 case class SpriteComponent(
 	sprite: String,
-	spriteSheet: String) extends Component {}
+	spriteSheet: String,
+	layer: Int) extends Component {}
 
 case class ModelComponent(
 	mesh: String,

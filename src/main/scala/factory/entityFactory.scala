@@ -11,7 +11,7 @@ object EntityFactory {
 	def createPlayer(position: Vec3): Entity = {
 		val components = Vector(
 			SpatialComponent(Quaternion.axisAngle(Vec3(0, 1, 0), 0), Vec3(8, 8, 0)),
-			SpriteComponent("walkright1", "testsheet")
+			SpriteComponent("walkright1", "testsheet", 0)
 		)
 		new Entity(components, Vector(), position, "player")
 	}

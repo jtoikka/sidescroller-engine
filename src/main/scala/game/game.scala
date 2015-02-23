@@ -16,6 +16,8 @@ import factory.EntityFactory
 import math.Vec3
 import render.Renderer
 import resource.ResourceManager
+import system.InputSystem
+import input.InputManager
 
 
 object Main extends App {
@@ -24,10 +26,13 @@ object Main extends App {
   
   val errorCallback = errorCallbackPrint(System.err)
 
+  val inputManager = new InputManager()
+
   val keyCallback = new GLFWKeyCallback() {
     override def invoke(
         window: Long, key: Int,
         scancode: Int, action: Int, mods: Int) {
+      inputManager.keyAction(key, scancode, action, mods)
     }
   }
   
@@ -104,7 +109,9 @@ object Main extends App {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
     val testScene = new Scene(
-      1000, 1000, 20, 20, Vector(), 
+      1000, 1000, 20, 20, Vector(
+        new InputSystem()
+      ), 
       EntityFactory.createCamera(
         Vec3(0, 0, 0),
         640, 360, 0.1f, 1000.0f))
@@ -133,10 +140,14 @@ object Main extends App {
       // fixed update
       while(frameAccumulator >= FrameDuration) {
         frameAccumulator -= FrameDuration
+        val inputs = inputManager.getInputs
+        testScene.setInputs(inputs._1, inputs._2, inputs._3)
+        testScene.update(FrameDuration.toFloat)
       }
 
       renderer.renderScene(testScene, resourceManager)
 
+      // Print frame rate
       timer += delta
       frameCount += 1
       longestFrame = scala.math.max(delta, 0)

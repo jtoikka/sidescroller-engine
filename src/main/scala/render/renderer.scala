@@ -16,6 +16,7 @@ import org.lwjgl.opengl.GL20._
 import org.lwjgl.BufferUtils
 
 import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable.Map
 
 class Renderer(screenWidth: Int, screenHeight: Int) {
 
@@ -35,7 +36,7 @@ class Renderer(screenWidth: Int, screenHeight: Int) {
 
 	private val NumBytesFloat = 4
 
-	private val spriteMap = collection.mutable.Map[String, ArrayBuffer[Float]]()
+	private val spriteMap = Map[String, Map[Int, ArrayBuffer[Float]]]()
 
 	def renderScene(
 		scene: Scene, 
@@ -135,7 +136,7 @@ class Renderer(screenWidth: Int, screenHeight: Int) {
 			case _ => 
 		}
 		entity(SpriteComp) match {
-			case Some(SpriteComponent(sprite, spriteSheet)) => {
+			case Some(SpriteComponent(sprite, spriteSheet, layer)) => {
 				renderSprite(entity, resourceManager)
 			}
 			case _ =>
@@ -166,7 +167,7 @@ class Renderer(screenWidth: Int, screenHeight: Int) {
 
 	def renderSprite(entity: Entity, resourceManager: ResourceManager) = {
 		entity(SpriteComp) match {
-			case Some(SpriteComponent(spriteId, spriteSheetId)) => {
+			case Some(SpriteComponent(spriteId, spriteSheetId, layer)) => {
 				val sheet = resourceManager.getSpriteSheet(spriteSheetId)
 				val sprite = sheet(spriteId)
 
@@ -185,9 +186,13 @@ class Renderer(screenWidth: Int, screenHeight: Int) {
         val vy = (sprite.y + sprite.h) / sheet.height.toFloat
 
         if (!spriteMap.contains(spriteSheetId)) {
-        	spriteMap(spriteSheetId) = new ArrayBuffer[Float]()
+        	spriteMap(spriteSheetId) = Map[Int, ArrayBuffer[Float]]()
         }
-        spriteMap(spriteSheetId) ++= Vector(
+        val depthMap = spriteMap(spriteSheetId)
+        if (!depthMap.contains(layer)) {
+        	depthMap(layer) = new ArrayBuffer[Float]()
+        }
+        depthMap(layer) ++= Vector(
           x1, y1, ux, uy,
           x1, y2, ux, vy,
           x2, y1, vx, uy,
@@ -203,8 +208,7 @@ class Renderer(screenWidth: Int, screenHeight: Int) {
 	var spriteVBO = 0
 
 	def renderSpritesToScreen(resourceManager: ResourceManager, program: ShaderProgram) = {
-		spriteMap.foreach {case (spriteSheetId, spriteBuffer) => {
-			println(spriteBuffer)
+		spriteMap.foreach {case (spriteSheetId, depthMap) => {
 			val sheet = resourceManager.getSpriteSheet(spriteSheetId)
 			val tex = sheet.texture
 
@@ -214,27 +218,28 @@ class Renderer(screenWidth: Int, screenHeight: Int) {
     	glUniform1i(texUnif, texIndex)
       glBindTexture(GL_TEXTURE_2D, texIndex)
 
+      depthMap.foreach { case (depth, spriteBuffer) => {
+    	 	val verticesBuffer = BufferUtils.createFloatBuffer(spriteBuffer.length)
+	      verticesBuffer.put(spriteBuffer.toArray)
+	      verticesBuffer.flip()
 
-      val verticesBuffer = BufferUtils.createFloatBuffer(spriteBuffer.size)
-      verticesBuffer.put(spriteBuffer.toArray)
-      verticesBuffer.flip()
+	      if (spriteVBO == 0) spriteVBO = glGenBuffers()
 
-      if (spriteVBO == 0) spriteVBO = glGenBuffers()
+	      glBindBuffer(GL_ARRAY_BUFFER, spriteVBO)
+	      glBufferData(GL_ARRAY_BUFFER, verticesBuffer, GL_STREAM_DRAW)
 
-      glBindBuffer(GL_ARRAY_BUFFER, spriteVBO)
-      glBufferData(GL_ARRAY_BUFFER, verticesBuffer, GL_STREAM_DRAW)
+	      glVertexAttribPointer(
+	      	program.attributes("position"),
+	      	2, GL_FLOAT, false, NumBytesFloat * 4, 0)
+	      glVertexAttribPointer(
+	      	program.attributes("uv"), 
+	      	2, GL_FLOAT, false, NumBytesFloat * 4, NumBytesFloat * 2)
 
-      glVertexAttribPointer(
-      	program.attributes("position"),
-      	2, GL_FLOAT, false, NumBytesFloat * 4, 0)
-      glVertexAttribPointer(
-      	program.attributes("uv"), 
-      	2, GL_FLOAT, false, NumBytesFloat * 4, NumBytesFloat * 2)
+	      glDrawArrays(GL_TRIANGLES, 0, spriteBuffer.size/4)
 
-      glDrawArrays(GL_TRIANGLES, 0, spriteBuffer.size/4)
-
-      glBindBuffer(GL_ARRAY_BUFFER, 0)
-      spriteBuffer.clear()
+	      glBindBuffer(GL_ARRAY_BUFFER, 0)
+	      spriteBuffer.clear()
+      }}
 		}}
 	}
 
