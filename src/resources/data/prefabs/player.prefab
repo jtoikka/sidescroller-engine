@@ -1,0 +1,14 @@
+#player
+position: 0.0, 0.0, 0.0
+
+SpatialComponent
+rotation: 0.0, 1.0, 0.0, 0.0
+scale: 1.0, 1.0, 1.0
+
+SpriteComponent
+sprite: walkright1
+sheet: testsheet
+layer: 0
+
+InputComponent
+pan: 32.0
