@@ -9,6 +9,7 @@ object MyBuild extends Build {
   val rootProjectId = "sidescroller"
 
   lazy val argonaut = "io.argonaut" %% "argonaut" % "6.0.4"  
+  lazy val sprayjson = "io.spray" %%  "spray-json" % "1.3.1"
 
   val lwjglVersion = "3.0"
 
@@ -35,7 +36,7 @@ object MyBuild extends Build {
       organization    := buildOrganization,
       version         := buildVersion,
       scalaVersion    := buildScalaVersion,
-      libraryDependencies ++= Seq(argonaut),
+      libraryDependencies ++= Seq(argonaut, sprayjson),
       javaOptions += "-Djava.library.path=" + newPath,
       javaOptions += "-XX:MaxGCPauseMillis=4"
     )

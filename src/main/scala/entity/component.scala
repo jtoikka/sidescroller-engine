@@ -8,16 +8,16 @@ import behaviour.Behaviour
 import input.InputReceiver
 
 object Component {
-	val SpriteComp = classOf[SpriteComponent]
-	val SpatialComp = classOf[SpatialComponent]
-	val ModelComp = classOf[ModelComponent]
-	val CameraComp = classOf[CameraComponent]
-	val CollisionComp = classOf[CollisionComponent]
-	val PhysicsComp = classOf[PhysicsComponent]
-	val AnimationComp = classOf[AnimationComponent]
-	val InputComp = classOf[InputComponent]
-	val BehaviourComp = classOf[BehaviourComponent]
-	val StateMachineComp = classOf[StateMachineComponent]
+	implicit val SpriteComp = classOf[SpriteComponent]
+	implicit val SpatialComp = classOf[SpatialComponent]
+	implicit val ModelComp = classOf[ModelComponent]
+	implicit val CameraComp = classOf[CameraComponent]
+	implicit val CollisionComp = classOf[CollisionComponent]
+	implicit val PhysicsComp = classOf[PhysicsComponent]
+	implicit val AnimationComp = classOf[AnimationComponent]
+	implicit val InputComp = classOf[InputComponent]
+	implicit val BehaviourComp = classOf[BehaviourComponent]
+	implicit val StateMachineComp = classOf[StateMachineComponent]
 	def bitMask(c: Class[_]): Long = {
 		c match {
 			case SpriteComp       => 1L << 0

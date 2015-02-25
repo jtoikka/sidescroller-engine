@@ -1,15 +1,15 @@
 package entity
 
-import Component._
 import spatial.Spatial
 import scala.reflect.ClassTag
 import math.Vec3
+import Component._
 
-class Entity(
+case class Entity(
 	components: Vector[Component], 
 	children: Vector[Entity],
-	position: Vec3,
-	val tag: String = "") extends Spatial(position) {
+	var position: Vec3,
+	tag: String = "") {
 
 	private val componentMap = scala.collection.mutable.HashMap(
 		(components map (c => (bitMask(c.getClass()), c)): _*))

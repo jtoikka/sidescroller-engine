@@ -12,7 +12,7 @@ object EntityFactory {
 	def createPlayer(position: Vec3): Entity = {
 		val playerSpeed = 32.0f * 1.0f
 		val components = Vector(
-			SpatialComponent(Quaternion.axisAngle(Vec3(0, 1, 0), 0), Vec3(1, 1, 1)),
+			SpatialComponent(Utility.axisAngle(Vec3(0, 1, 0), 0), Vec3(1, 1, 1)),
 			SpriteComponent("walkright1", "testsheet", 0),
 			InputComponent(new PanInput(playerSpeed))
 		)

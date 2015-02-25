@@ -18,6 +18,7 @@ import render.Renderer
 import resource.ResourceManager
 import system.InputSystem
 import input.InputManager
+import resource.PrefabLoader
 
 
 object Main extends App {
@@ -116,7 +117,11 @@ object Main extends App {
         Vec3(0, 0, 0),
         640, 360, 0.1f, 1000.0f))
 
-    testScene.addEntity(EntityFactory.createPlayer(Vec3(0, 0, 0)))
+    // testScene.addEntity(EntityFactory.createPlayer(Vec3(0, 0, 0)))
+
+    val testPlayer = PrefabLoader.load("src/resources/data/prefabs/player.json")
+
+    testScene.addEntity(testPlayer)
 
     val renderer = new Renderer(WIDTH, HEIGHT)
 

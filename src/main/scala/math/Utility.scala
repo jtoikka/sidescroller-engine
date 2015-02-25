@@ -1,5 +1,7 @@
 package math
 
+import scala.math.{sin, cos}
+
 object Utility {
 	def translationMatrix(translation: Vec3): Mat4 = {
 		Mat4(
@@ -17,5 +19,15 @@ object Utility {
 			0, 0, scale.z, 0,
 			0, 0, 0, 1
 		)
+	}
+
+	def axisAngle(axis: Vec3, angle: Float) = {
+		val sinAng = sin(angle/2).toFloat
+		val cosAng = cos(angle/2).toFloat
+		Quaternion(
+			axis.x * sinAng,
+			axis.y * sinAng,
+			axis.z * sinAng,
+			cosAng)
 	}
 }

@@ -1,0 +1,18 @@
+{
+	"position":[0.0, 0.0, 0.0],
+	"tag":"player",
+	"components":[
+		{
+			"type":"spatial",
+			"rotation": [0.0, 1.0, 0.0, 0.0],
+			"scale": [1.0, 1.0, 1.0]
+		},
+		{
+			"type":"sprite",
+			"sprite":"walkright1",
+			"spriteSheet":"testsheet",
+			"layer":0
+		}
+	],
+	"children":[]
+}
