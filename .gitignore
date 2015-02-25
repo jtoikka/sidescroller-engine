@@ -32,3 +32,4 @@ Thumbs.db
 .history
 .ensime*
 *.ensime*
+.ensime_lucene/
