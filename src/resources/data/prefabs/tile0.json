@@ -1,6 +1,6 @@
 {
 	"position":[0.0, 0.0, 0.0],
-	"tag":"player",
+	"tag":"tile",
 	"components":[
 		{
 			"type":"spatial",
@@ -9,34 +9,29 @@
 		},
 		{
 			"type":"sprite",
-			"sprite":"walkright1",
-			"spriteSheet":"testsheet",
+			"sprite":"0",
+			"spriteSheet":"tiles",
 			"layer":0
-		},
-		{
-			"type":"input",
-			"inputReceiver":"player"
 		},
 		{
 			"type":"physics",
 			"velocity": [0.0, 0.0, 0.0],
 			"acceleration": [0.0, 0.0, 0.0],
-			"mass": 1.0,
-			"bounciness":0.1,
-			"static": false
+			"mass": 0.0,
+			"bounciness": 0.0,
+			"static": true
 		},
 		{
 			"type":"collision",
-			"hurtBoxes":[
+			"hurtBoxes":[],
+			"hitBoxes":[],
+			"rigidBoxes":[
 				{
 					"type":"box",
 					"origin": [0.0, 0.0],
-					"width": 16.0,
-					"height": 20.0
-				}
-			],
-			"hitBoxes":[],
-			"rigidBoxes":[],
+					"width": 8.0,
+					"height": 8.0
+				}],
 			"triggers":[]
 		}
 	],

@@ -16,7 +16,7 @@ import factory.EntityFactory
 import math.Vec3
 import render.Renderer
 import resource.ResourceManager
-import system.InputSystem
+import system._
 import input.InputManager
 import resource.PrefabLoader
 
@@ -111,21 +111,27 @@ object Main extends App {
 
     val testScene = new Scene(
       1000, 1000, 20, 20, Vector(
-        new InputSystem()
+        new InputSystem(),
+        new PhysicsSystem(Vector(Vec3(0, -9.81f * 8, 0)))
       ), 
       EntityFactory.createCamera(
         Vec3(0, 0, 0),
         640, 360, 0.1f, 1000.0f))
 
     // testScene.addEntity(EntityFactory.createPlayer(Vec3(0, 0, 0)))
+    val resourceManager = new ResourceManager("src/resources/data/")
 
-    val testPlayer = PrefabLoader.load("src/resources/data/prefabs/player.json")
+    val testPlayer = resourceManager.getPrefab("player", Vec3(0, 100, 0))
+    val testBlock0 = resourceManager.getPrefab("tile0", Vec3(-8, 0, 0))
+    val testBlock1 = resourceManager.getPrefab("tile0", Vec3(0, 0, 0))
+    val testBlock2 = resourceManager.getPrefab("tile0", Vec3(8, 0, 0))
 
     testScene.addEntity(testPlayer)
+    testScene.addEntity(testBlock0)
+    testScene.addEntity(testBlock1)
+    testScene.addEntity(testBlock2)
 
     val renderer = new Renderer(WIDTH, HEIGHT)
-
-    val resourceManager = new ResourceManager("src/resources/data/")
 
     glfwSetTime(0)
     var timer = 0.0

@@ -11,31 +11,37 @@ class Scene(
   columns: Int, rows: Int,
   systems: Vector[System],
   val camera: Entity) {
-	// val entities = new SpatialGrid2D[Entity](width, height, columns, rows)
-	val entities = new ArrayBuffer[Entity]()
+	val entities = new SpatialGrid2D[Entity](width, height, columns, rows)
+	// val entities = new SpatialGrid[Entity]()
 
 	entities += camera
 
 	def update(delta: Float) = {
 		if (!isPaused) {
-			val changes = entities.map(entity => {
+			val changes = entities.flatMap(entity => {
 				updateEntity(entity, delta)
 			})
 			val events = changes.flatMap {
 				case Changes(entity, stateChanges, events) => {
+					// println("A: " + entity.position)
 					val oldPos = entity.position
 					stateChanges.foreach {_.applyTo(entity)}
-					// if (oldPos != entity.position) {
-					// 	entities.move(entity, oldPos)
-					// }
+					// println("B: " + entity.position)
+					if (oldPos != entity.position) {
+						entities.move(entity, oldPos)
+					}
 					events
 				}
 			}
-			changes.foreach { case Changes(entity, stateChanges, events) =>
-				stateChanges.foreach { stateChange =>
-					stateChange.applyTo(entity)
-				}
-			}
+			// changes.foreach { case Changes(entity, stateChanges, events) =>
+			// 	stateChanges.foreach { stateChange =>
+			// 		val oldPos = entity.position
+			// 		stateChange.applyTo(entity)
+			// 		if (oldPos != entity.position) {
+			// 			entities.move(entity, oldPos)
+			// 		}
+			// 	}
+			// }
 		}
 	}
 

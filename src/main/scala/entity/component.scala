@@ -56,14 +56,16 @@ case class CameraComponent(
 	orthographic: Boolean) extends Component {}
 
 case class CollisionComponent(
-	hurtboxes: Vector[CollisionShape],
+	hurtBoxes: Vector[CollisionShape],
 	hitBoxes: Vector[CollisionShape],
+	rigidBoxes: Vector[CollisionShape],
 	triggers: Vector[CollisionShape]) extends Component {}
 
 case class PhysicsComponent(
 	velocity: Vec3,
 	acceleration: Vec3,
 	mass: Float,
+	bounciness: Float,
 	static: Boolean) extends Component {}
 
 case class AnimationComponent(
@@ -71,7 +73,7 @@ case class AnimationComponent(
 	timer: Double) extends Component {}
 
 case class InputComponent(
-	inputReceiver: InputReceiver) extends Component {}
+	inputReceiver: String) extends Component {}
 
 case class BehaviourComponent(
 	behaviours: Vector[Behaviour]) extends Component {}

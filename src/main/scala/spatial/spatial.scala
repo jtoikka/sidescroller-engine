@@ -2,4 +2,6 @@ package spatial
 
 import math.Vec3
 
-class Spatial(var position: Vec3) {}
+trait Spatial {
+	def getPosition: Vec3
+}

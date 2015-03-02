@@ -1,5 +1,11 @@
 package math
 
+object Vec3 {
+  def apply(v: Vec2, f: Float): Vec3 = {
+    Vec3(v.x, v.y, f)
+  }
+}
+
 case class Vec3(x: Float, y: Float, z: Float) {
   def +(other: Vec3) = 
     Vec3(this.x + other.x, this.y + other.y, this.z + other.z)
@@ -32,9 +38,9 @@ case class Vec3(x: Float, y: Float, z: Float) {
      this.x * other.y - this.y * other.x
    )
   
-  def length() = Math.pow(this.dot(this), 0.5).floatValue()
+  lazy val length = Math.pow(this.dot(this), 0.5).floatValue()
   
-  def normalize() = this / length
+  lazy val normalize = this / length
   
   def xx() = Vec2(x, x)
   def xy() = Vec2(x, y)

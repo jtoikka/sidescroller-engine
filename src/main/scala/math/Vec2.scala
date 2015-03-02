@@ -17,7 +17,9 @@ case class Vec2(x: Float, y: Float) {
     
   def dot(other: Vec2): Float = this.x * other.x + this.y * other.y
   
-  def length() = Math.pow(this.dot(this), 0.5).toFloat
+  lazy val length = Math.pow(this.dot(this), 0.5).toFloat
+
+  lazy val lengthSquared = this.dot(this)
   
   def normalize(): Vec2 = this / length
   

@@ -2,10 +2,9 @@ package resource
 
 import scala.io.Source
 import entity.Entity
-// import argonaut._, Argonaut._
 import entity._
 import math._
-import scala.collection.mutable.ArrayBuffer
+import physics._
 
 import spray.json._
 import DefaultJsonProtocol._
@@ -32,7 +31,7 @@ object PrefabLoader extends DefaultJsonProtocol {
 			Vec3(vec(0), vec(1), vec(2))
 		}
 	}
-	
+
 	implicit object QuaternionJsonFormat extends JsonFormat[Quaternion] {
 		def write(v: Quaternion) = {
 			Vector(v.x, v.y, v.z, v.w).toJson
@@ -44,17 +43,65 @@ object PrefabLoader extends DefaultJsonProtocol {
 		}
 	}
 
-	implicit val spatialFormat = jsonFormat2(SpatialComponent)
-	implicit val spriteFormat = jsonFormat3(SpriteComponent)
-	implicit val modelFormat = jsonFormat2(ModelComponent)
+	// implicit lazy val boxCollisionFormat = jsonFormat3(BoxCollision)
+
+	implicit object BoxCollisionJsonFormat extends JsonFormat[BoxCollision] {
+		def write(box: BoxCollision) = {
+			JsObject(
+				"origin" -> box.origin.toJson,
+				"width" -> JsNumber(box.width),
+				"height" -> JsNumber(box.height)
+			)
+		}
+
+		def read(value: JsValue) = {
+			value.asJsObject.getFields(
+				"origin", "width", "height") match {
+				case Seq(origin, JsNumber(width), JsNumber(height)) => {
+					BoxCollision(
+						origin.convertTo[Vec2], 
+						width.toInt, 
+						height.toInt)
+				}
+			}
+		}
+	}
+
+	implicit object CollisionShapeJsonFormat extends JsonFormat[CollisionShape] {
+		def write(shape: CollisionShape) = {
+			shape match {
+				case b: BoxCollision => b.toJson
+			}
+		}
+
+		def read(value: JsValue) = {
+			value.asJsObject.getFields("type").head.convertTo[String] match {
+				case "box" => value.convertTo[BoxCollision]
+				case  _ => throw new Exception("Invalid collision shape")
+			}
+		}
+	}
+
+	implicit lazy val spatialFormat = jsonFormat2(SpatialComponent)
+	implicit lazy val spriteFormat = jsonFormat3(SpriteComponent)
+	implicit lazy val modelFormat = jsonFormat2(ModelComponent)
+	implicit lazy val cameraFormat = jsonFormat5(CameraComponent)
+	implicit lazy val collisionFormat = jsonFormat4(CollisionComponent)
+	implicit lazy val physicsFormat = jsonFormat5(PhysicsComponent)
+	implicit lazy val animationFormat = jsonFormat2(AnimationComponent)
+	implicit lazy val inputFormat = jsonFormat1(InputComponent)
 
 	implicit object ComponentJsonFormat extends RootJsonFormat[Component] {
 		def write(component: Component) = {
-			component match {
-				case s: SpatialComponent => s.toJson
-				case s: SpriteComponent => s.toJson
-				case m: ModelComponent => m.toJson
-			}
+			component.toJson
+			// component match {
+			// 	case c: SpatialComponent => c.toJson
+			// 	case c: SpriteComponent => c.toJson
+			// 	case c: ModelComponent => c.toJson
+			// 	case c: CameraComponent => c.toJson
+			// 	case c: CollisionComponent => c.toJson
+			// 	case p: PhysicsComponent
+			// }
 		}
 
 		def read(value: JsValue) = {
@@ -62,6 +109,11 @@ object PrefabLoader extends DefaultJsonProtocol {
 				case "spatial" => value.convertTo[SpatialComponent]
 				case "sprite" => value.convertTo[SpriteComponent]
 				case "model" => value.convertTo[ModelComponent]
+				case "camera" => value.convertTo[CameraComponent]
+				case "collision" => value.convertTo[CollisionComponent]
+				case "physics" => value.convertTo[PhysicsComponent]
+				case "animation" => value.convertTo[AnimationComponent]
+				case "input" => value.convertTo[InputComponent]
 				case  _ => throw new Exception("Invalid component")
 			}
 		}
@@ -97,74 +149,3 @@ object PrefabLoader extends DefaultJsonProtocol {
 		json.convertTo[Entity]
 	}
 }
-
-// object PrefabLoader {
-// 	implicit lazy val QuaternionEncode: EncodeJson[Quaternion] =
-// 		EncodeJson(q => {
-// 			List(q.x, q.y, q.z, q.w).asJson
-// 		})
-
-// 	implicit lazy val QuaternionDecode: DecodeJson[Quaternion] =
-// 		DecodeJson(cursor => for {
-// 			x <- (cursor).as[Float]
-// 			y <- (cursor.-<-:(1)).as[Float]
-// 			z <- (cursor.-<-:(1)).as[Float]
-// 			w <- (cursor.-<-:(1)).as[Float]
-// 		} yield Quaternion(x, y, z, w))
-
-// 	implicit lazy val Vec3Encode: EncodeJson[Vec3] =
-// 		EncodeJson(v => {
-// 			List(v.x, v.y, v.z).asJson
-// 		})
-
-// 	implicit lazy val Vec3Decode: DecodeJson[Vec3] =
-// 		DecodeJson(cursor => for {
-// 			x <- (cursor).as[Float]
-// 			y <- (cursor.-<-:(1)).as[Float]
-// 			z <- (cursor.-<-:(1)).as[Float]
-// 		} yield Vec3(x, y, z))
-
-// 	// implicit lazy val ComponentDecode: DecodeJson[Component] =
-// 	// 	DecodeJson(cursor => for {
-// 	// 		t <- (cursor --\ "type").as[String]
-// 	// 		component <- {
-// 	// 			val focus = cursor.focus
-// 	// 			t match {
-// 	// 				case "spatial" => focus.
-// 	// 			}
-// 	// 		}
-// 	// 	})
-
-// 	implicit lazy val EntityDecode: DecodeJson[Entity] =
-// 		DecodeJson(cursor => for {
-// 			// components <- (cursor --\ "components").as[ComponentList]
-// 			// children <- (cursor --\ "children").as[List[Entity]]
-// 			position <- (cursor --\ "position").as[Vec3]
-// 			tag <- (cursor --\ "tag").as[String]
-// 		} yield new Entity(Vector(), Vector(), position, tag))
-
-// 	case class ComponentList(
-// 		spatial: Option[SpatialComponent], 
-// 		sprite: Option[SpriteComponent]) {
-// 		def toVector = {
-// 			Vector(spatial, sprite).filter(_.isDefined).map(_.get)
-// 		}
-// 	}
-
-// 	implicit lazy val EntityLoadCodec: CodecJson[ComponentList] =
-// 		casecodec2(ComponentList.apply, ComponentList.unapply)("spatial", "sprite")
-
-// 	implicit lazy val SpatialComponentCodec: CodecJson[SpatialComponent] = 
-// 		casecodec2(SpatialComponent.apply, SpatialComponent.unapply)("rotation", "scale")
-
-// 	implicit lazy val SpriteComponentCodec: CodecJson[SpriteComponent] = 
-// 		casecodec3(
-// 			SpriteComponent.apply, 
-// 			SpriteComponent.unapply)("sprite", "spriteSheet", "layer")
-
-// 	def load(filePath: String): Option[Entity] = {
-// 		val input = Source.fromFile(filePath).mkString
-// 		println(input)
-// 		input.decodeOption[Entity]
-// 	}
-// }

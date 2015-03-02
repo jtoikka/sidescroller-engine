@@ -1,6 +1,6 @@
 package resource
 
-import entity.Entity
+import entity._
 
 import scala.io.Source
 import scala.collection.mutable.Map
@@ -10,6 +10,8 @@ import org.lwjgl.BufferUtils
 import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
+
+import math.Vec3
 
 class ResourceLoadException(message: String) extends Exception(message) {}
 
@@ -102,6 +104,31 @@ class ResourceManager(directory: String) {
 			}
 		} else {
 			throw new ResourceLoadException("Mesh " + name + " does not exist.")
+		}
+	}
+
+	def getPrefab(
+		name: String, 
+		position: Vec3 = Vec3(0, 0, 0), 
+		components: Vector[Component] = Vector()): Entity = {
+		val fullName = if (name.split('.').size > 1) name else name + ".json"
+		if (prefabs.contains(fullName)) {
+			val prefab = prefabs(fullName)
+			val entity = prefab match {
+				case Some(entity) => entity
+				case None => {
+					val ent = PrefabLoader.load(directory + PrefabDir + "/" + fullName)
+					prefabs(fullName) = Some(ent)
+					ent
+				}
+			}
+			val newEntity = entity.copy(position = position)
+			components foreach (comp => {
+				newEntity.updateComponent(comp)
+			})
+			newEntity
+		} else {
+			throw new ResourceLoadException("Prefab " + name + " does not exist.")
 		}
 	}
 

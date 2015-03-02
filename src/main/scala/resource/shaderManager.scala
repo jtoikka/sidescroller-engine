@@ -35,7 +35,6 @@ object ShaderManager {
     val uniforms = uniformLines.map(_.split(" ")(2).dropRight(1))
 
     val vertSource = vertLines.mkString("\n")
-    println(vertSource)
     val fragSource = fragLines.mkString("\n")
     
     val vertexShader = glCreateShader(GL_VERTEX_SHADER)

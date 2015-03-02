@@ -15,6 +15,8 @@ class SpatialGrid2D[T <: Spatial](
 
 	private val grid = ArrayBuffer.fill(columns * rows)(ArrayBuffer[T]())
 
+	private val outOfBounds = ArrayBuffer[T]()
+
 	def size = columns * rows
 
 	def apply(index: Int) = grid(index)
@@ -26,12 +28,15 @@ class SpatialGrid2D[T <: Spatial](
 	* @return True if the object was successfully added, false otherwise
 	*/
 	def add(elem: T): Boolean = {
-		val pos = elem.position
+		val pos = elem.getPosition
 		val index = getIndex(pos.x, pos.y)
+		// println(index)
+		// println(pos)
 		if (index >= 0) {
 			grid(index) += elem
 			true
 		} else {
+			outOfBounds += elem
 			false
 		}
 	}
@@ -40,12 +45,12 @@ class SpatialGrid2D[T <: Spatial](
   * Removes an element.
   */
   def remove(elem: T): T = {
-  	val pos = elem.position
+  	val pos = elem.getPosition
 		val index = getIndex(pos.x, pos.y)
 		if (index >= 0) {
 			grid(index).remove(grid(index).indexOf(elem))
 		} else {
-			throw new SpatialGridException("Element to remove not found.")
+			outOfBounds.remove(outOfBounds.indexOf(elem))
 		}
   }
 
@@ -78,8 +83,21 @@ class SpatialGrid2D[T <: Spatial](
 			val i = previousCell.indexOf(elem)
 			if (i >= 0)
 				previousCell.remove(i)
-			else
+			else {
+				val i = outOfBounds.indexOf(elem)
+				if (i >= 0) {
+					outOfBounds.remove(i)
+				} else {
+					throw new SpatialGridException("Trying to move an invalid element.")
+				}
+			}
+		} else {
+			val i = outOfBounds.indexOf(elem)
+			if (i >= 0) {
+				outOfBounds.remove(i)
+			} else {
 				throw new SpatialGridException("Trying to move an invalid element.")
+			}
 		}
 		add(elem)
 	}
@@ -101,8 +119,9 @@ class SpatialGrid2D[T <: Spatial](
 			yield grid(getIndex(i, j)).toVector
 
 		temp.flatten.filter(elem => 
-			elem.position.x >= x && elem.position.x <= x + width &&
-			elem.position.y >= y && elem.position.y <= y + height).toVector
+			elem.getPosition.x >= x && elem.getPosition.x <= x + width &&
+			elem.getPosition.y >= y && elem.getPosition.y <= y + height).toVector ++ 
+			outOfBounds
 	}
 
 /**
@@ -112,6 +131,7 @@ class SpatialGrid2D[T <: Spatial](
 		for (i <- 0 until size) {
 			grid(i).foreach(op)
 		}
+		outOfBounds.foreach(op)
 	}
 
 /**
@@ -131,6 +151,9 @@ class SpatialGrid2D[T <: Spatial](
 			}
 			i += 1
 		}
+		if (!found) {
+			r = outOfBounds.find(pred)
+		}
 		r
 	}
 
@@ -140,7 +163,7 @@ class SpatialGrid2D[T <: Spatial](
 	def flatMap[T2](op: T => T2): Vector[T2] = {
 		grid.map(cell => {
 			cell map (op(_))
-		}).flatten.toVector
+		}).flatten.toVector ++ outOfBounds.map(op)
 	}
 
 

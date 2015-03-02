@@ -9,7 +9,7 @@ case class Entity(
 	components: Vector[Component], 
 	children: Vector[Entity],
 	var position: Vec3,
-	tag: String = "") {
+	tag: String = "") extends Spatial {
 
 	private val componentMap = scala.collection.mutable.HashMap(
 		(components map (c => (bitMask(c.getClass()), c)): _*))
@@ -30,6 +30,8 @@ case class Entity(
 			None
 		}
 	}
+
+	def getPosition = position
 
 	def apply[T <: Component : ClassTag](c: Class[T]) = getComponent(c)
 
