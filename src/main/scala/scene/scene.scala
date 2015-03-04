@@ -7,9 +7,9 @@ import system._
 import system.StateChange
 
 class Scene(
-	width: Float, height: Float,
-  columns: Int, rows: Int,
-  systems: Vector[System],
+	val width: Float, val height: Float,
+  val columns: Int, val rows: Int,
+  val systems: Vector[System],
   val camera: Entity) {
 	val entities = new SpatialGrid2D[Entity](width, height, columns, rows)
 	// val entities = new SpatialGrid[Entity]()
@@ -18,6 +18,7 @@ class Scene(
 
 	def update(delta: Float) = {
 		if (!isPaused) {
+			systems.foreach{_.instantiate(this)}
 			val changes = entities.flatMap(entity => {
 				updateEntity(entity, delta)
 			})
@@ -33,15 +34,6 @@ class Scene(
 					events
 				}
 			}
-			// changes.foreach { case Changes(entity, stateChanges, events) =>
-			// 	stateChanges.foreach { stateChange =>
-			// 		val oldPos = entity.position
-			// 		stateChange.applyTo(entity)
-			// 		if (oldPos != entity.position) {
-			// 			entities.move(entity, oldPos)
-			// 		}
-			// 	}
-			// }
 		}
 	}
 

@@ -121,15 +121,48 @@ object Main extends App {
     // testScene.addEntity(EntityFactory.createPlayer(Vec3(0, 0, 0)))
     val resourceManager = new ResourceManager("src/resources/data/")
 
-    val testPlayer = resourceManager.getPrefab("player", Vec3(0, 100, 0))
-    val testBlock0 = resourceManager.getPrefab("tile0", Vec3(-8, 0, 0))
-    val testBlock1 = resourceManager.getPrefab("tile0", Vec3(0, 0, 0))
-    val testBlock2 = resourceManager.getPrefab("tile0", Vec3(8, 0, 0))
+    val level = Array[Array[Int]](
+      Array[Int](1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+      Array[Int](1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+      Array[Int](1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+      Array[Int](1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+      Array[Int](1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+      Array[Int](1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1),
+      Array[Int](1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1),
+      Array[Int](1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1),
+      Array[Int](1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1),
+      Array[Int](1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1),
+      Array[Int](1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1),
+      Array[Int](1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1),
+      Array[Int](1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1),
+      Array[Int](1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1),
+      Array[Int](1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+      Array[Int](1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+      Array[Int](1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+      Array[Int](1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+      Array[Int](1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
+    )
 
-    testScene.addEntity(testPlayer)
-    testScene.addEntity(testBlock0)
-    testScene.addEntity(testBlock1)
-    testScene.addEntity(testBlock2)
+    for (x <- 0 until level(0).length; y <- 0 until level.length) {
+      if (level(y)(x) == 1) {
+        val testBlock = resourceManager.getPrefab("tile0", Vec3(8 * (x - 10), 8 * (y - 10), 0))
+        testScene.addEntity(testBlock)
+      }
+    }
+
+    val testPlayer0 = resourceManager.getPrefab("player", Vec3(0, 20, 0))
+    // val testPlayer1 = resourceManager.getPrefab("player", Vec3(16, 20, 0))
+    // val testPlayer2 = resourceManager.getPrefab("player", Vec3(32, 20, 0))
+    // val testPlayer3 = resourceManager.getPrefab("player", Vec3(48, 20, 0))
+    // val testPlayer4 = resourceManager.getPrefab("player", Vec3(64, 20, 0))
+    // val testPlayer5 = resourceManager.getPrefab("player", Vec3(80, 20, 0))
+
+    testScene.addEntity(testPlayer0)
+    // testScene.addEntity(testPlayer1)
+    // testScene.addEntity(testPlayer2)
+    // testScene.addEntity(testPlayer3)
+    // testScene.addEntity(testPlayer4)
+    // testScene.addEntity(testPlayer5)
 
     val renderer = new Renderer(WIDTH, HEIGHT)
 

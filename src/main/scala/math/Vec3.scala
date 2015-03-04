@@ -37,22 +37,26 @@ case class Vec3(x: Float, y: Float, z: Float) {
      this.z * other.x - this.x * other.z,
      this.x * other.y - this.y * other.x
    )
+
+  lazy val abs = Vec3(x.abs, y.abs, z.abs)
   
   lazy val length = Math.pow(this.dot(this), 0.5).floatValue()
+
+  lazy val lengthSquared = this.dot(this)
   
   lazy val normalize = this / length
   
-  def xx() = Vec2(x, x)
-  def xy() = Vec2(x, y)
-  def xz() = Vec2(z, z)
+  lazy val xx = Vec2(x, x)
+  lazy val xy = Vec2(x, y)
+  lazy val xz = Vec2(z, z)
   
-  def yx() = Vec2(y, x)
-  def yy() = Vec2(y, y)
-  def yz() = Vec2(y, z)
+  lazy val yx = Vec2(y, x)
+  lazy val yy = Vec2(y, y)
+  lazy val yz = Vec2(y, z)
   
-  def zx() = Vec2(z, x)
-  def zy() = Vec2(z, y)
-  def zz() = Vec2(z, z)
+  lazy val zx = Vec2(z, x)
+  lazy val zy = Vec2(z, y)
+  lazy val zz = Vec2(z, z)
   
   override def toString() = {
     "x: " + x + " y: " + y + " z: " + z

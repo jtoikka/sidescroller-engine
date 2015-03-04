@@ -66,6 +66,7 @@ case class PhysicsComponent(
 	acceleration: Vec3,
 	mass: Float,
 	bounciness: Float,
+	friction: Float,
 	static: Boolean) extends Component {}
 
 case class AnimationComponent(

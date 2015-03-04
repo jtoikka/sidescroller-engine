@@ -14,8 +14,10 @@ class InputSystem extends System(bitMask(InputComp)) {
 
 	val inputReceivers = Map(
 		"pan" -> new PanInput(32.0f),
-		"player" -> new PlayerInputGround(10.0f)
+		"player" -> new PlayerInputGround(40.0f * 2)
 	)
+
+	def instantiate(scene: Scene) = {}
 
 	def applyTo(
 			entity: Entity,

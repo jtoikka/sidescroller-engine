@@ -9,8 +9,8 @@
 		},
 		{
 			"type":"sprite",
-			"sprite":"walkright1",
-			"spriteSheet":"testsheet",
+			"sprite":"1",
+			"spriteSheet":"tiles",
 			"layer":0
 		},
 		{
@@ -22,7 +22,8 @@
 			"velocity": [0.0, 0.0, 0.0],
 			"acceleration": [0.0, 0.0, 0.0],
 			"mass": 1.0,
-			"bounciness":0.1,
+			"bounciness": 0.4,
+			"friction": 1.8,
 			"static": false
 		},
 		{
@@ -31,8 +32,8 @@
 				{
 					"type":"box",
 					"origin": [0.0, 0.0],
-					"width": 16.0,
-					"height": 20.0
+					"width": 8.0,
+					"height": 8.0
 				}
 			],
 			"hitBoxes":[],

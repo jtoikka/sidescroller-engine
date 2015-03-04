@@ -87,7 +87,7 @@ object PrefabLoader extends DefaultJsonProtocol {
 	implicit lazy val modelFormat = jsonFormat2(ModelComponent)
 	implicit lazy val cameraFormat = jsonFormat5(CameraComponent)
 	implicit lazy val collisionFormat = jsonFormat4(CollisionComponent)
-	implicit lazy val physicsFormat = jsonFormat5(PhysicsComponent)
+	implicit lazy val physicsFormat = jsonFormat6(PhysicsComponent)
 	implicit lazy val animationFormat = jsonFormat2(AnimationComponent)
 	implicit lazy val inputFormat = jsonFormat1(InputComponent)
 

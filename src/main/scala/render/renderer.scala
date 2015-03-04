@@ -94,7 +94,7 @@ class Renderer(screenWidth: Int, screenHeight: Int) {
 
         // TODO: Add perspective projection
         val cameraToClip = Camera.orthographicProjection3(
-			    camLeft, camRight, camUp, camDown
+			    camLeft/2, camRight/2, camUp/2, camDown/2
 			  )
 	      val camClipBuffer = BufferUtils.createFloatBuffer(cameraToClip.size)
 		    camClipBuffer.put(cameraToClip.asArray)
