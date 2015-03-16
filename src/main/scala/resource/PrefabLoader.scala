@@ -5,6 +5,9 @@ import entity.Entity
 import entity._
 import math._
 import physics._
+import state.StateManager
+import behaviour._
+// import behaviour.Behav
 
 import spray.json._
 import DefaultJsonProtocol._
@@ -40,6 +43,22 @@ object PrefabLoader extends DefaultJsonProtocol {
 		def read(value: JsValue) = {
 			val vec = value.convertTo[Vector[Float]]
 			Quaternion(vec(0), vec(1), vec(2), vec(3))
+		}
+	}
+
+	implicit object BehaviourJsonFormat extends JsonFormat[Behaviour] {
+		def write(b: Behaviour) = {
+			b.toJson
+		}
+
+		def read(value: JsValue) = {
+			value.asJsObject.getFields("type", "parameters") match {
+				case Seq(behaviourType, parameters) => {
+					val id = behaviourType.convertTo[String]
+					val params = parameters.convertTo[List[Float]]
+					BehaviourManager.createBehaviour(id, params)
+				}
+			}
 		}
 	}
 
@@ -82,14 +101,80 @@ object PrefabLoader extends DefaultJsonProtocol {
 		}
 	}
 
+	implicit object PhysicsComponentJsonFormat extends JsonFormat[PhysicsComponent] {
+		def write(comp: PhysicsComponent) = {
+			JsObject(
+				"velocity" -> comp.velocity.toJson,
+				"acceleration" -> comp.acceleration.toJson,
+				"mass" -> JsNumber(comp.mass),
+				"bounciness" -> JsNumber(comp.bounciness),
+				"friction" -> JsNumber(comp.friction),
+				"maxHorizontal" -> JsNumber(comp.maxHorizontal),
+				"maxVertical" -> JsNumber(comp.maxVertical),
+				"static" -> JsBoolean(comp.static))
+		}
+
+		def read(value: JsValue) = {
+			value.asJsObject.getFields(
+				"velocity", 
+				"acceleration", 
+				"mass", 
+				"bounciness", 
+				"friction", 
+				"maxHorizontal",
+				"maxVertical",
+				"static") match {
+				case Seq(
+					velocity, acceleration, 
+					JsNumber(mass), JsNumber(bounciness), 
+					JsNumber(friction), 
+					JsNumber(maxHorizontal), JsNumber(maxVertical),
+					JsBoolean(static)) => {
+					PhysicsComponent(
+						velocity.convertTo[Vec3],
+						acceleration.convertTo[Vec3],
+						mass.toFloat, 
+						bounciness.toFloat, 
+						friction.toFloat, 
+						maxHorizontal.toFloat,
+						maxVertical.toFloat, 
+						1.0f, static)
+				}
+			}
+		}
+	}
+
 	implicit lazy val spatialFormat = jsonFormat2(SpatialComponent)
 	implicit lazy val spriteFormat = jsonFormat3(SpriteComponent)
 	implicit lazy val modelFormat = jsonFormat2(ModelComponent)
 	implicit lazy val cameraFormat = jsonFormat5(CameraComponent)
-	implicit lazy val collisionFormat = jsonFormat4(CollisionComponent)
-	implicit lazy val physicsFormat = jsonFormat6(PhysicsComponent)
+	implicit lazy val collisionFormat = jsonFormat5(CollisionComponent)
+	// implicit lazy val physicsFormat = jsonFormat6(PhysicsComponent)
 	implicit lazy val animationFormat = jsonFormat2(AnimationComponent)
 	implicit lazy val inputFormat = jsonFormat1(InputComponent)
+	implicit lazy val behaviourFormat = jsonFormat1(BehaviourComponent)
+
+	implicit object StateJsonFormat extends JsonFormat[StateComponent] {
+		def write(stateComponent: StateComponent) = {
+			stateComponent.toJson
+		}
+
+		def read(value: JsValue) = {
+			value.asJsObject.getFields("stateMachine") match {
+				case Seq(stateMachineId) => {
+					val id = stateMachineId.convertTo[String]
+					val state = StateManager.stateMachines(id).getDefault
+					StateComponent(state)
+				}
+				case _ => {
+					throw new Exception("Invalid state component")
+				}
+			}
+		}
+	}
+	// implicit object BehaviourJsonFormat extends JsonFormat[Behaviour] {
+
+	// }
 
 	implicit object ComponentJsonFormat extends RootJsonFormat[Component] {
 		def write(component: Component) = {
@@ -105,7 +190,8 @@ object PrefabLoader extends DefaultJsonProtocol {
 		}
 
 		def read(value: JsValue) = {
-			value.asJsObject.getFields("type").head.convertTo[String] match {
+			val t = value.asJsObject.getFields("type").head.convertTo[String]
+			t match {
 				case "spatial" => value.convertTo[SpatialComponent]
 				case "sprite" => value.convertTo[SpriteComponent]
 				case "model" => value.convertTo[ModelComponent]
@@ -114,7 +200,9 @@ object PrefabLoader extends DefaultJsonProtocol {
 				case "physics" => value.convertTo[PhysicsComponent]
 				case "animation" => value.convertTo[AnimationComponent]
 				case "input" => value.convertTo[InputComponent]
-				case  _ => throw new Exception("Invalid component")
+				case "behaviour" => value.convertTo[BehaviourComponent]
+				case "state" => value.convertTo[StateComponent]
+				case  _ => throw new Exception("Invalid component: " + t)
 			}
 		}
 	}

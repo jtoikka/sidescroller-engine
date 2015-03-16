@@ -112,7 +112,9 @@ object Main extends App {
     val testScene = new Scene(
       1000, 1000, 20, 20, Vector(
         new InputSystem(),
-        new PhysicsSystem(Vector(Vec3(0, -9.81f * 8, 0)))
+        new PhysicsSystem(Vector(Vec3(0, -9.81f * 14, 0))),
+        new StateSystem(),
+        new BehaviourSystem()
       ), 
       EntityFactory.createCamera(
         Vec3(0, 0, 0),
@@ -132,10 +134,10 @@ object Main extends App {
       Array[Int](1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1),
       Array[Int](1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1),
       Array[Int](1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1),
+      Array[Int](1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1),
       Array[Int](1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1),
-      Array[Int](1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1),
-      Array[Int](1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1),
-      Array[Int](1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1),
+      Array[Int](1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1),
+      Array[Int](1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1),
       Array[Int](1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
       Array[Int](1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
       Array[Int](1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
@@ -144,8 +146,12 @@ object Main extends App {
     )
 
     for (x <- 0 until level(0).length; y <- 0 until level.length) {
-      if (level(y)(x) == 1) {
-        val testBlock = resourceManager.getPrefab("tile0", Vec3(8 * (x - 10), 8 * (y - 10), 0))
+      val tile = level(level.length - 1 - y)(x)
+      if (tile == 1) {
+        val testBlock = resourceManager.getPrefab("tile0", Vec3(8 * (x - 16), 8 * (y - 10), 0))
+        testScene.addEntity(testBlock)
+      } else if (tile == 2) {
+        val testBlock = resourceManager.getPrefab("tile1", Vec3(8 * (x - 16), 8 * (y - 10), 0))
         testScene.addEntity(testBlock)
       }
     }
@@ -186,7 +192,10 @@ object Main extends App {
         frameAccumulator -= FrameDuration
         val inputs = inputManager.getInputs
         testScene.setInputs(inputs._1, inputs._2, inputs._3)
+        val before = System.nanoTime()
         testScene.update(FrameDuration.toFloat)
+        val after = System.nanoTime()
+        longestFrame = scala.math.max(longestFrame, (after - before) / 1000000.0)
       }
 
       renderer.renderScene(testScene, resourceManager)
@@ -194,15 +203,14 @@ object Main extends App {
       // Print frame rate
       timer += delta
       frameCount += 1
-      longestFrame = scala.math.max(delta, 0)
+      // longestFrame = scala.math.max(delta, 0)
       if (timer > 1) {
         println("FPS: " + frameCount)
         timer -= 1
         frameCount = 0
-        println("Longest frame: " + longestFrame)
+        println("Longest frame: " + longestFrame + "ms")
         longestFrame = 0
       }
-
       glfwSwapBuffers(window)
       glfwPollEvents()
     }

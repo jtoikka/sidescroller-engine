@@ -1,6 +1,7 @@
 package resource
 
 import entity._
+import state.StateMachine
 
 import scala.io.Source
 import scala.collection.mutable.Map

@@ -14,7 +14,8 @@ class InputSystem extends System(bitMask(InputComp)) {
 
 	val inputReceivers = Map(
 		"pan" -> new PanInput(32.0f),
-		"player" -> new PlayerInputGround(40.0f * 2)
+		"playerGround" -> new PlayerInputGround(40.0f * 4.8f),
+		"playerAir" -> new PlayerInputAir(40.0f * 2.5f)
 	)
 
 	def instantiate(scene: Scene) = {}
@@ -29,17 +30,17 @@ class InputSystem extends System(bitMask(InputComp)) {
 				val pressedChanges = receiver.keyPressedCallbacks.filter(pair => {
 					pressedKeys.contains(pair._1)
 				}).map(pair => {
-					pair._2(delta)
+					pair._2(delta, entity)
 				})
 				val heldChanges = receiver.keyHeldCallbacks.filter(pair =>
 					heldKeys.contains(pair._1)
 				).map(pair => {
-					pair._2(delta)
+					pair._2(delta, entity)
 				})
 				val releasedChanges = receiver.keyReleasedCallbacks.filter(pair =>
 					releasedKeys.contains(pair._1)
 				).map(pair => {
-					pair._2(delta)
+					pair._2(delta, entity)
 				})
 				Changes(entity, (pressedChanges ++ heldChanges ++ releasedChanges).toVector, Vector())
 			}

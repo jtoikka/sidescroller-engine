@@ -18,7 +18,11 @@ case class PhysicalObject(
 	bounciness: Float,
 	collision: CollisionComponent,
 	friction: Float,
-	static: Boolean
+	static: Boolean,
+	maxHorizontal: Float,
+	maxVertical: Float,
+	var onGround: Boolean = false,
+	var inAir: Boolean = false
 	) extends Spatial {
 
 	def getPosition = position
@@ -29,8 +33,8 @@ class PhysicsSystem(globalForces: Vector[Vec3])
 
 	val globalForce = globalForces.reduce(_ + _)
 
-	var spatialGrid: SpatialGrid2D[PhysicalObject] = new SpatialGrid2D[PhysicalObject](
-			1, 1, 1, 1)
+	var spatialGrid: SpatialGrid2D[PhysicalObject] = 
+		new SpatialGrid2D[PhysicalObject](1, 1, 1, 1)
 
 	def instantiate(scene: Scene) = {
 		sceneToPhysical(scene)
@@ -42,14 +46,17 @@ class PhysicsSystem(globalForces: Vector[Vec3])
 		scene.entities foreach (entity => {
 			(entity(PhysicsComp), entity(CollisionComp)) match {
 				case (Some(PhysicsComponent(
-					velocity, acceleration, mass, bounciness, friction, static)), 
+					velocity, acceleration, mass, bounciness, 
+					friction, frictionMultiplier,
+					maxHorizontal, maxVertical, static)), 
 					Some(collision)) => {
 					spatialGrid += 
 						PhysicalObject(
 							entity,
 							entity.position, 
 							velocity, acceleration, 
-							mass, bounciness, collision, friction, static)
+							mass, bounciness, collision, friction, static,
+							maxHorizontal, maxVertical)
 				}
 				case _ =>
 			}
@@ -89,9 +96,23 @@ class PhysicsSystem(globalForces: Vector[Vec3])
 
 		a.collision.hurtBoxes.foreach(hBox => {
 			b.collision.rigidBoxes.foreach(rBox => {
-				val intersect = CollisionTest(newPosA, hBox, newPosB, rBox)
-				if (greatestIntersection.lengthSquared < intersect.lengthSquared) {
-					greatestIntersection = intersect
+				if (b.collision.oneWay) {
+					if (a.velocity.y <= 0) {
+						val startCollision = CollisionTest(a.position, hBox, newPosB, rBox)
+						if (startCollision.lengthSquared == 0) {
+							val intersect = CollisionTest(newPosA, hBox, newPosB, rBox)
+							if (intersect.y > 0) {
+								if (greatestIntersection.lengthSquared < intersect.lengthSquared) {
+									greatestIntersection = intersect
+								}
+							}
+						}
+					}
+				} else {
+					val intersect = CollisionTest(newPosA, hBox, newPosB, rBox)
+					if (greatestIntersection.lengthSquared < intersect.lengthSquared) {
+						greatestIntersection = intersect
+					}
 				}
 			})
 		})
@@ -122,7 +143,7 @@ class PhysicsSystem(globalForces: Vector[Vec3])
 		(colIntersect, collider)
 	}
 
-	val minPermittedCollision = 0.1f
+	val minPermittedCollision = 0.02f
 
 	def findPointOfCollision(
 		a: PhysicalObject, delta: Float,
@@ -135,7 +156,10 @@ class PhysicsSystem(globalForces: Vector[Vec3])
 		} else if (maxFull.length == 0) {
 			(delta, maxFull, colFull)
 		} else {
-			def findSuitable(i: Int, time: Float): (Float, Vec2, Option[PhysicalObject]) = {
+			def findSuitable(
+				i: Int, time: Float):
+				(Float, Vec2, Option[PhysicalObject]) = {
+					
 				val (maxCollision, col) = findMaxCollision(a, time, lockX, lockY)
 				if (maxCollision.length > minPermittedCollision) {
 					findSuitable(i * 2, time - delta/(i * 2))
@@ -177,57 +201,57 @@ class PhysicsSystem(globalForces: Vector[Vec3])
 			val deltaVel = 
 				if (colIntersect.lengthSquared != 0.0) {
 					val v = physObj.velocity + changeVelocity
-					val reflected = reflection(v, normal)
-					val perpendicular = normal.cross(ZAxis)
+					if (v.dot(normal) < 1.0f) {
+						val reflected = reflection(v, normal)
+						val perpendicular = normal.cross(ZAxis)
 
-					val colFriction = collider match {
-						case Some(col) => col.friction
-						case _ => 0
-					}
+						val colFriction = collider match {
+							case Some(col) => col.friction
+							case _ => 0
+						}
 
-					val bounce = reflected * normal.abs
-					val tangent = reflected * perpendicular.abs
-					val normalTangent = 
-						if (tangent.lengthSquared != 0) tangent.normalize else Vec3(0, 0, 0)
+						val bounce = reflected * normal.abs
+						val tangent = reflected * perpendicular.abs
+						val normalTangent = 
+							if (tangent.lengthSquared != 0) tangent.normalize else Vec3(0, 0, 0)
 
-					val frictionAccel = 
-						(colFriction * physObj.friction) * 
-						(globalForce + physObj.acceleration).dot(normal) * normalTangent
+						val frictionAccel = 
+							(colFriction * physObj.friction) * 
+							(globalForce + physObj.acceleration).dot(normal) * normalTangent
 
-					var frictionVel = frictionAccel * pointOfCollision
+						var frictionVel = frictionAccel * pointOfCollision
 
-					// if ((tangent + frictionVel).length <= 0) {
-					// 	frictionVel = tangent.neg
-					// }
-					// println("overall friction: " + colFriction * physObj.friction)
-					// println("normal tangent: " + tangent)
-					// println("frictionVel: " + frictionVel)
-					// val frictionlessVel = bounce * physObj.bounciness + tangent
-					if ((tangent + frictionVel).normalize == tangent.normalize) {
-						bounce * physObj.bounciness + tangent - physObj.velocity + frictionVel
+						if (normal.y > 0) {
+							physObj.onGround = true
+							physObj.inAir = false
+						}
+						if ((tangent + frictionVel).normalize == tangent.normalize) {
+							bounce * physObj.bounciness + tangent - physObj.velocity + frictionVel
+						} else {
+							bounce * physObj.bounciness + physObj.velocity.neg
+						}
 					} else {
-						bounce * physObj.bounciness + physObj.velocity.neg
+						changeVelocity
 					}
-
-					// val withFriction = frictionlessVel + frictionVel
-
-					// if (withFriction.normalize == frictionlessVel.normalize) {
-					// 	withFriction
-					// } else {
-					// 	Vec3(0, 0, 0)
-					// }
 				} else 
 					changeVelocity
 
 			physObj.position += displacement
 			physObj.velocity += deltaVel
+			if (physObj.velocity.x.abs > physObj.maxHorizontal) {
+				val d = (physObj.velocity.x.abs - physObj.maxHorizontal)
+				physObj.velocity -= Vec3((d * d) * physObj.velocity.x.signum, 0, 0)
+			}
+			if (lockY && normal.y != 0) {
+				physObj.inAir = false
+			}
 
 			applyPhysics(
 				physObj, 
 				scene, 
 				delta - pointOfCollision, 
-				lockX || normal.x != 0, 
-				lockY || normal.y != 0)
+				lockX || (normal.x * physObj.velocity.x < 0), 
+				lockY || (normal.y * physObj.velocity.y < 0))
 		}
 	}
 
@@ -237,18 +261,38 @@ class PhysicsSystem(globalForces: Vector[Vec3])
 			delta: Float): Changes = {
 		(entity(PhysicsComp), entity(CollisionComp)) match {
 			case (Some(
-				PhysicsComponent(velocity, acceleration, mass, bounciness, friction, static)), 
+				PhysicsComponent(
+					velocity, acceleration, mass, bounciness,
+				  friction, frictionMultiplier, 
+				  maxHorizontal, maxVertical, static)), 
 				Some(collision)) => {
-				val physicalObj = 
-					PhysicalObject(
-						entity, entity.position, velocity, acceleration,
-					  mass, bounciness, collision, friction, static)
 
-				applyPhysics(physicalObj, scene, delta)
-				Changes(entity, Vector(
-					Translation(physicalObj.position - entity.position), 
-					Acceleration(physicalObj.velocity - velocity)),
-					Vector())
+				if (!static) {
+					val physicalObj = 
+						PhysicalObject(
+							entity, entity.position, velocity, acceleration,
+						  mass, bounciness, collision, 
+						  friction * frictionMultiplier, 
+						  static, maxHorizontal, maxVertical)
+
+					physicalObj.inAir = true
+
+					applyPhysics(physicalObj, scene, delta)
+					val deltaPos = physicalObj.position - entity.position
+
+					if (physicalObj.onGround) {
+						entity.triggers("onGround") = true
+					}
+					if (physicalObj.inAir) {
+						entity.triggers("inAir") = true
+					}
+					Changes(entity, Vector(
+						Translation(physicalObj.position - entity.position), 
+						Acceleration(physicalObj.velocity - velocity)),
+						Vector())
+				} else {
+					Changes(entity, Vector(), Vector())
+				}
 			}
 			case _ => Changes(entity, Vector(), Vector())
 		}

@@ -1,8 +1,9 @@
 package input
 
 import system.StateChange
+import entity.Entity
 
 case class InputReceiver(
-	keyPressedCallbacks: Map[Int, Float => StateChange],
-	keyHeldCallbacks: Map[Int, Float => StateChange],
-	keyReleasedCallbacks: Map[Int, Float => StateChange]) {}
+	keyPressedCallbacks: Map[Int, (Float, Entity) => StateChange],
+	keyHeldCallbacks: Map[Int, (Float, Entity) => StateChange],
+	keyReleasedCallbacks: Map[Int, (Float, Entity) => StateChange]) {}

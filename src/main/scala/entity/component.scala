@@ -6,6 +6,7 @@ import math.Quaternion
 import physics.CollisionShape
 import behaviour.Behaviour
 import input.InputReceiver
+import state.State
 
 object Component {
 	implicit val SpriteComp = classOf[SpriteComponent]
@@ -17,7 +18,7 @@ object Component {
 	implicit val AnimationComp = classOf[AnimationComponent]
 	implicit val InputComp = classOf[InputComponent]
 	implicit val BehaviourComp = classOf[BehaviourComponent]
-	implicit val StateMachineComp = classOf[StateMachineComponent]
+	implicit val StateComp = classOf[StateComponent]
 	def bitMask(c: Class[_]): Long = {
 		c match {
 			case SpriteComp       => 1L << 0
@@ -29,7 +30,7 @@ object Component {
 			case AnimationComp    => 1L << 6
 			case InputComp        => 1L << 7
 			case BehaviourComp    => 1L << 8
-			case StateMachineComp => 1L << 9
+			case StateComp => 1L << 9
 			case _ => -1
 		}
 	}
@@ -59,7 +60,8 @@ case class CollisionComponent(
 	hurtBoxes: Vector[CollisionShape],
 	hitBoxes: Vector[CollisionShape],
 	rigidBoxes: Vector[CollisionShape],
-	triggers: Vector[CollisionShape]) extends Component {}
+	triggers: Vector[CollisionShape],
+	oneWay: Boolean) extends Component {}
 
 case class PhysicsComponent(
 	velocity: Vec3,
@@ -67,6 +69,9 @@ case class PhysicsComponent(
 	mass: Float,
 	bounciness: Float,
 	friction: Float,
+	frictionMultiplier: Float,
+	maxHorizontal: Float,
+	maxVertical: Float,
 	static: Boolean) extends Component {}
 
 case class AnimationComponent(
@@ -79,6 +84,5 @@ case class InputComponent(
 case class BehaviourComponent(
 	behaviours: Vector[Behaviour]) extends Component {}
 
-case class StateMachineComponent(
-	stateMachine: String,
-	state: String) extends Component {}
+case class StateComponent(
+	state: State) extends Component {}

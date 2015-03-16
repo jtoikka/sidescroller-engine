@@ -24,10 +24,9 @@ class Scene(
 			})
 			val events = changes.flatMap {
 				case Changes(entity, stateChanges, events) => {
-					// println("A: " + entity.position)
 					val oldPos = entity.position
 					stateChanges.foreach {_.applyTo(entity)}
-					// println("B: " + entity.position)
+					// If the entity has moved, move it in the spatial grid
 					if (oldPos != entity.position) {
 						entities.move(entity, oldPos)
 					}
@@ -52,11 +51,17 @@ class Scene(
   }
 
 	def updateEntity(entity: Entity, delta: Float): Changes = {
-		val changes = systems map(system => {
-      system.applyTo(entity, this, delta)
+		val changes = systems.filter(s => (s.key & entity.key) > 0) map(system => {
+				system.applyTo(entity, this, delta)
     })
     val stateChanges = changes flatMap (_.stateChanges)
     val events = changes flatMap (_.events)
+    entity.triggers.clear()
+    entity.timers.values.foreach(timer => {
+    	if (timer.isRunning) {
+    		timer += delta
+    	}
+    })
     Changes(entity, stateChanges, events)
 	}
 

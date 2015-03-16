@@ -11,6 +11,15 @@ case class Entity(
 	var position: Vec3,
 	tag: String = "") extends Spatial {
 
+	val flags = 
+		collection.mutable.Map[String, Boolean]().withDefaultValue(false)
+
+	val triggers = 
+		collection.mutable.Map[String, Boolean]().withDefaultValue(false)
+
+	val timers =
+		collection.mutable.Map[String, Timer]()
+
 	private val componentMap = scala.collection.mutable.HashMap(
 		(components map (c => (bitMask(c.getClass()), c)): _*))
 

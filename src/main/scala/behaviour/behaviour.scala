@@ -2,13 +2,25 @@ package behaviour
 
 import entity.Entity
 import scene.Scene
+import system._
 
 abstract class Behaviour {
-	def update(entity: Entity, scene: Scene, delta: Float)
+	var initialized = false
+	def initialize(entity: Entity, scene: Scene): Unit = {}
 
-	def fixedUpdate(entity: Entity, scene: Scene, delta: Float)
+	def update(entity: Entity, scene: Scene, delta: Float): Changes = {
+		Changes(entity)
+	}
 
-	def onTriggerEnter(collider: Entity)
+	def fixedUpdate(entity: Entity, scene: Scene, delta: Float): Changes = {
+		Changes(entity)
+	}
 
-	def onCollision(collider: Entity)
+	def onTriggerEnter(entity: Entity, scene: Scene, collider: Entity): Changes = {
+		Changes(entity)
+	}
+
+	def onCollision(entity: Entity, scene: Scene, collider: Entity): Changes = {
+		Changes(entity)
+	}
 }

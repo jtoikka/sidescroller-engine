@@ -9,7 +9,7 @@
 		},
 		{
 			"type":"sprite",
-			"sprite":"0",
+			"sprite":"1",
 			"spriteSheet":"tiles",
 			"layer":0
 		},
@@ -36,7 +36,7 @@
 					"height": 8.0
 				}],
 			"triggers":[],
-			"oneWay":false
+			"oneWay":true
 		}
 	],
 	"children":[]
