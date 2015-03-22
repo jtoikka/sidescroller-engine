@@ -55,7 +55,7 @@ object PrefabLoader extends DefaultJsonProtocol {
 			value.asJsObject.getFields("type", "parameters") match {
 				case Seq(behaviourType, parameters) => {
 					val id = behaviourType.convertTo[String]
-					val params = parameters.convertTo[List[Float]]
+					val params = parameters.convertTo[List[String]]
 					BehaviourManager.createBehaviour(id, params)
 				}
 			}
@@ -77,10 +77,34 @@ object PrefabLoader extends DefaultJsonProtocol {
 			value.asJsObject.getFields(
 				"origin", "width", "height") match {
 				case Seq(origin, JsNumber(width), JsNumber(height)) => {
-					BoxCollision(
+					new BoxCollision(
 						origin.convertTo[Vec2], 
 						width.toInt, 
 						height.toInt)
+				}
+			}
+		}
+	}
+
+	implicit object TriggerBoxCollisionJsonFormat extends JsonFormat[TriggerBoxCollision] {
+		def write(box: TriggerBoxCollision) = {
+			JsObject(
+				"origin" -> box.origin.toJson,
+				"width" -> JsNumber(box.width),
+				"height" -> JsNumber(box.height),
+				"tag" -> JsString(box.tag)
+			)
+		}
+
+		def read(value: JsValue) = {
+			value.asJsObject.getFields(
+				"origin", "width", "height", "tag") match {
+				case Seq(origin, JsNumber(width), JsNumber(height), JsString(tag)) => {
+					new TriggerBoxCollision(
+						origin.convertTo[Vec2], 
+						width.toInt, 
+						height.toInt,
+						tag)
 				}
 			}
 		}
@@ -96,6 +120,7 @@ object PrefabLoader extends DefaultJsonProtocol {
 		def read(value: JsValue) = {
 			value.asJsObject.getFields("type").head.convertTo[String] match {
 				case "box" => value.convertTo[BoxCollision]
+				case "triggerBox" => value.convertTo[TriggerBoxCollision]
 				case  _ => throw new Exception("Invalid collision shape")
 			}
 		}
@@ -148,7 +173,7 @@ object PrefabLoader extends DefaultJsonProtocol {
 	implicit lazy val spriteFormat = jsonFormat3(SpriteComponent)
 	implicit lazy val modelFormat = jsonFormat2(ModelComponent)
 	implicit lazy val cameraFormat = jsonFormat5(CameraComponent)
-	implicit lazy val collisionFormat = jsonFormat5(CollisionComponent)
+	implicit lazy val collisionFormat = jsonFormat4(CollisionComponent)
 	// implicit lazy val physicsFormat = jsonFormat6(PhysicsComponent)
 	implicit lazy val animationFormat = jsonFormat2(AnimationComponent)
 	implicit lazy val inputFormat = jsonFormat1(InputComponent)

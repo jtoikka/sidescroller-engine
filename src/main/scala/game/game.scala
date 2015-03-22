@@ -12,22 +12,29 @@ import org.lwjgl.opengl.GL15._
 import org.lwjgl.system.MemoryUtil._
 
 import scene.Scene
-import factory.EntityFactory
+import factory._
 import math.Vec3
 import render.Renderer
 import resource.ResourceManager
 import system._
 import input.InputManager
+import event._
 import resource.PrefabLoader
 
 
-object Main extends App {
+object Main extends App with Listener {
   val WIDTH = 640
   val HEIGHT = 360
   
   val errorCallback = errorCallbackPrint(System.err)
 
   val inputManager = new InputManager()
+  val eventManager = new EventManager()
+
+  eventManager.addListener(this)
+
+  var xPos = BufferUtils.createDoubleBuffer(1)
+  var yPos = BufferUtils.createDoubleBuffer(1)
 
   val keyCallback = new GLFWKeyCallback() {
     override def invoke(
@@ -36,12 +43,20 @@ object Main extends App {
       inputManager.keyAction(key, scancode, action, mods)
     }
   }
+
+  val mouseCallback = new GLFWMouseButtonCallback() {
+    override def invoke(
+      window: Long, button: Int,
+      action: Int, mods: Int) {
+      inputManager.mouseAction(button, action, mods)
+    }
+  }
   
   // Window handle
   var window: Long = 0
   
   def run(): Unit = {
-    println("Hello LWJGL " + Sys.getVersion + "!")
+    // println("Hello LWJGL " + Sys.getVersion + "!")
     try {
       init()
       loop()
@@ -49,6 +64,7 @@ object Main extends App {
       // Release window and window callbacks
       glfwDestroyWindow(window)
       keyCallback.release()
+      mouseCallback.release()
     } finally {
       // Terminate GLFW and release the GLFWerrorfun
       glfwTerminate()
@@ -80,6 +96,7 @@ object Main extends App {
       throw new RuntimeException("Failed to create the GLFW window")
     
     glfwSetKeyCallback(window, keyCallback)
+    glfwSetMouseButtonCallback(window, mouseCallback)
     
     val vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor())
     // Center our window
@@ -93,10 +110,7 @@ object Main extends App {
     // Enable v-sync
     glfwSwapInterval(1)
     glfwShowWindow(window)
-  }
 
-
-  private def loop() = {
     GLContext.createFromCurrent()
  
     // Set the clear color
@@ -108,67 +122,36 @@ object Main extends App {
     glDepthFunc(GL_LEQUAL)
     glCullFace(GL_BACK)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+  }
 
-    val testScene = new Scene(
-      1000, 1000, 20, 20, Vector(
-        new InputSystem(),
-        new PhysicsSystem(Vector(Vec3(0, -9.81f * 14, 0))),
-        new StateSystem(),
-        new BehaviourSystem()
-      ), 
-      EntityFactory.createCamera(
-        Vec3(0, 0, 0),
-        640, 360, 0.1f, 1000.0f))
+  val inactiveScenes = scala.collection.mutable.Map[String, Scene]()
+  val activeScenes = scala.collection.mutable.Map[String, Scene]()
 
-    // testScene.addEntity(EntityFactory.createPlayer(Vec3(0, 0, 0)))
-    val resourceManager = new ResourceManager("src/resources/data/")
-
-    val level = Array[Array[Int]](
-      Array[Int](1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
-      Array[Int](1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
-      Array[Int](1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
-      Array[Int](1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
-      Array[Int](1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
-      Array[Int](1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1),
-      Array[Int](1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1),
-      Array[Int](1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1),
-      Array[Int](1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1),
-      Array[Int](1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1),
-      Array[Int](1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1),
-      Array[Int](1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1),
-      Array[Int](1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1),
-      Array[Int](1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1),
-      Array[Int](1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
-      Array[Int](1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
-      Array[Int](1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
-      Array[Int](1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
-      Array[Int](1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
-    )
-
-    for (x <- 0 until level(0).length; y <- 0 until level.length) {
-      val tile = level(level.length - 1 - y)(x)
-      if (tile == 1) {
-        val testBlock = resourceManager.getPrefab("tile0", Vec3(8 * (x - 16), 8 * (y - 10), 0))
-        testScene.addEntity(testBlock)
-      } else if (tile == 2) {
-        val testBlock = resourceManager.getPrefab("tile1", Vec3(8 * (x - 16), 8 * (y - 10), 0))
-        testScene.addEntity(testBlock)
+  def handleEvents(): Unit = {
+    for (event <- events) {
+      event match {
+        case e: SceneChangeEvent => {
+          activeScenes(e.activate) = inactiveScenes(e.activate)
+          inactiveScenes.remove(e.activate)
+          inactiveScenes(e.inactivate) = activeScenes(e.inactivate)
+          activeScenes.remove(e.inactivate)
+          println("handeled")
+        }
       }
     }
+    events.clear()
+  }
 
-    val testPlayer0 = resourceManager.getPrefab("player", Vec3(0, 20, 0))
-    // val testPlayer1 = resourceManager.getPrefab("player", Vec3(16, 20, 0))
-    // val testPlayer2 = resourceManager.getPrefab("player", Vec3(32, 20, 0))
-    // val testPlayer3 = resourceManager.getPrefab("player", Vec3(48, 20, 0))
-    // val testPlayer4 = resourceManager.getPrefab("player", Vec3(64, 20, 0))
-    // val testPlayer5 = resourceManager.getPrefab("player", Vec3(80, 20, 0))
 
-    testScene.addEntity(testPlayer0)
-    // testScene.addEntity(testPlayer1)
-    // testScene.addEntity(testPlayer2)
-    // testScene.addEntity(testPlayer3)
-    // testScene.addEntity(testPlayer4)
-    // testScene.addEntity(testPlayer5)
+  private def loop() = {
+
+    val resourceManager = new ResourceManager("src/resources/data/")
+
+    val menuScene = SceneFactory.createMenu(resourceManager)
+    val testScene = SceneFactory.createTestLevel(resourceManager)
+
+    inactiveScenes("test") = testScene
+    activeScenes("menu") = menuScene
 
     val renderer = new Renderer(WIDTH, HEIGHT)
 
@@ -189,16 +172,28 @@ object Main extends App {
 
       // fixed update
       while(frameAccumulator >= FrameDuration) {
+        glfwGetCursorPos(window, xPos, yPos)
+        val x = xPos.get(0)
+        val y = HEIGHT - yPos.get(0)
+        inputManager.setCursor(x, y)
         frameAccumulator -= FrameDuration
         val inputs = inputManager.getInputs
-        testScene.setInputs(inputs._1, inputs._2, inputs._3)
+        activeScenes.values.foreach(
+          _.setInputs(
+            inputs._1, inputs._2, inputs._3,
+            inputs._4, inputs._5, inputs._6,
+            inputs._7)
+        )
         val before = System.nanoTime()
-        testScene.update(FrameDuration.toFloat)
+        activeScenes.values.foreach(
+          _.update(FrameDuration.toFloat, eventManager)
+        )
+        handleEvents()
         val after = System.nanoTime()
         longestFrame = scala.math.max(longestFrame, (after - before) / 1000000.0)
       }
 
-      renderer.renderScene(testScene, resourceManager)
+      activeScenes.values.foreach(renderer.renderScene(_, resourceManager))
 
       // Print frame rate
       timer += delta

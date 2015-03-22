@@ -26,8 +26,7 @@
 		},
 		{
 			"type":"collision",
-			"hurtBoxes":[],
-			"hitBoxes":[],
+			"collisionBoxes":[],
 			"rigidBoxes":[
 				{
 					"type":"box",

@@ -5,6 +5,8 @@ import spatial.SpatialGrid2D
 import scala.collection.mutable.ArrayBuffer
 import system._
 import system.StateChange
+import math.Vec2
+import event._
 
 class Scene(
 	val width: Float, val height: Float,
@@ -16,7 +18,7 @@ class Scene(
 
 	entities += camera
 
-	def update(delta: Float) = {
+	def update(delta: Float, eventManager: EventManager) = {
 		if (!isPaused) {
 			systems.foreach{_.instantiate(this)}
 			val changes = entities.flatMap(entity => {
@@ -33,18 +35,27 @@ class Scene(
 					events
 				}
 			}
+			eventManager.delegateEvents(events)
 		}
 	}
 
 	def setInputs(
       pressed: Vector[Int], 
       held: Vector[Int], 
-      released: Vector[Int]) = {
+      released: Vector[Int],
+      mousePressed: Vector[Int],
+      mouseHeld: Vector[Int],
+      mouseReleased: Vector[Int],
+      cursor: Vec2) = {
     systems.foreach(_ match {
       case s: InputSystem => {
         s.pressedKeys = pressed
         s.heldKeys = held
         s.releasedKeys = released
+        s.mousePressed = mousePressed
+        s.mouseHeld = mouseHeld
+        s.mouseReleased = mouseReleased
+        s.cursor = cursor
       }
       case _ => 
     })
@@ -52,7 +63,7 @@ class Scene(
 
 	def updateEntity(entity: Entity, delta: Float): Changes = {
 		val changes = systems.filter(s => (s.key & entity.key) > 0) map(system => {
-				system.applyTo(entity, this, delta)
+			system.applyTo(entity, this, delta)
     })
     val stateChanges = changes flatMap (_.stateChanges)
     val events = changes flatMap (_.events)
@@ -62,6 +73,7 @@ class Scene(
     		timer += delta
     	}
     })
+    entity.privateEvents.clear()
     Changes(entity, stateChanges, events)
 	}
 

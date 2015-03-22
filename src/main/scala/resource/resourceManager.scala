@@ -1,6 +1,7 @@
 package resource
 
 import entity._
+import entity.Component._
 import state.StateMachine
 
 import scala.io.Source
@@ -123,7 +124,7 @@ class ResourceManager(directory: String) {
 					ent
 				}
 			}
-			val newEntity = entity.copy(position = position)
+			val newEntity = entity.createCopy(position)
 			components foreach (comp => {
 				newEntity.updateComponent(comp)
 			})

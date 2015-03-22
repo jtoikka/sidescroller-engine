@@ -7,6 +7,7 @@ import input.InputReceiver
 import input._
 import org.lwjgl.glfw.GLFW._
 import system.Translation
+import behaviour.CameraBehaviour
 
 object EntityFactory {
 	def createPlayer(position: Vec3): Entity = {
@@ -25,7 +26,8 @@ object EntityFactory {
 		zNear: Float, zFar: Float): Entity = {
 		val camSpeed = 32.0f * 10.0f
 		new Entity(Vector(
-		CameraComponent(zNear, zFar, width, height, true)
+		CameraComponent(zNear, zFar, width, height, true),
+		BehaviourComponent(Vector(new CameraBehaviour(List())))
 		), Vector(), position, "camera")
 	}
 }

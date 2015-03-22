@@ -1,6 +1,6 @@
 {
 	"position":[0.0, 0.0, 0.0],
-	"tag":"tile",
+	"tag":"cursor",
 	"components":[
 		{
 			"type":"spatial",
@@ -14,27 +14,21 @@
 			"layer":0
 		},
 		{
-			"type":"physics",
-			"velocity": [0.0, 0.0, 0.0],
-			"acceleration": [0.0, 0.0, 0.0],
-			"mass": 0.0,
-			"bounciness": 0.0,
-			"friction": 1.0,
-			"maxHorizontal": 0.0,
-			"maxVertical": 0.0,
-			"static": true
+			"type":"input",
+			"inputReceiver":"cursor"
 		},
 		{
 			"type":"collision",
 			"collisionBoxes":[],
-			"rigidBoxes":[
+			"rigidBoxes":[],
+			"triggers":[
 				{
-					"type":"box",
-					"origin": [0.0, 0.0],
+					"type":"triggerBox",
+					"origin": [0.0, 0.0, 0.0],
 					"width": 8.0,
-					"height": 8.0
+					"height": 8.0,
+					"tag":"cursor"
 				}],
-			"triggers":[],
 			"oneWay":false
 		}
 	],

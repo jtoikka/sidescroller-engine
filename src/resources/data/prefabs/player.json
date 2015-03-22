@@ -30,7 +30,7 @@
 		},
 		{
 			"type":"collision",
-			"hurtBoxes":[
+			"collisionBoxes":[
 				{
 					"type":"box",
 					"origin": [0.0, 0.0],
@@ -38,9 +38,16 @@
 					"height": 8.0
 				}
 			],
-			"hitBoxes":[],
 			"rigidBoxes":[],
-			"triggers":[],
+			"triggers":[
+				{
+					"type":"triggerBox",
+					"origin": [0.0, -4.5],
+					"width": 8.0,
+					"height": 0.5,
+					"tag": "groundCheck"
+				}
+			],
 			"oneWay":false
 		},
 		{

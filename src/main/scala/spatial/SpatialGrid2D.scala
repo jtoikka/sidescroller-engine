@@ -144,7 +144,7 @@ class SpatialGrid2D[T <: Spatial](
 		while (i < size && !found) {
 			val cell = grid(i)
 			var j = 0
-			while (j < size && !found) {
+			while (j < grid(i).size && !found) {
 				found = pred(cell(j))
 				if (found) r = Some(cell(j))
 				j += 1

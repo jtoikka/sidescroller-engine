@@ -1,0 +1,30 @@
+{"frames": [
+
+{
+	"filename": "levelEditor.png",
+	"frame": {"x":2,"y":2,"w":96,"h":32},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":96,"h":32},
+	"sourceSize": {"w":96,"h":32},
+	"pivot": {"x":0.5,"y":0.5}
+},
+{
+	"filename": "startButton.png",
+	"frame": {"x":100,"y":2,"w":96,"h":32},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":96,"h":32},
+	"sourceSize": {"w":96,"h":32},
+	"pivot": {"x":0.5,"y":0.5}
+}],
+"meta": {
+	"app": "http://www.codeandweb.com/texturepacker",
+	"version": "1.0",
+	"image": "menuSheet.png",
+	"format": "RGBA8888",
+	"size": {"w":198,"h":36},
+	"scale": "1",
+	"smartupdate": "$TexturePacker:SmartUpdate:e2ae2378f30a13758e32140667630009:23164f53c222cccf331f7e39f1f33fa5:08df6b41f1c759971d7a1e1906229423$"
+}
+}

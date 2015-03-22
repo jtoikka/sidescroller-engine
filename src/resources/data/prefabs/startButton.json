@@ -1,0 +1,45 @@
+{
+	"position":[0.0, 0.0, 0.0],
+	"tag":"button",
+	"components":[
+		{
+			"type":"spatial",
+			"rotation": [0.0, 1.0, 0.0, 0.0],
+			"scale": [1.0, 1.0, 1.0]
+		},
+		{
+			"type":"sprite",
+			"sprite":"startButton",
+			"spriteSheet":"menuSheet",
+			"layer":0
+		},
+		{
+			"type":"input",
+			"inputReceiver":"button"
+		},
+		{
+			"type":"collision",
+			"collisionBoxes":[],
+			"rigidBoxes":[],
+			"triggers":[
+				{
+					"type":"triggerBox",
+					"origin": [0.0, 0.0, 0.0],
+					"width": 96.0,
+					"height": 32.0,
+					"tag":"button"
+				}],
+			"oneWay":false
+		},
+		{
+			"type":"behaviour",
+			"behaviours":[
+				{
+					"type":"button",
+					"parameters":["changeScene", "menu", "test"]
+				}
+			]
+		}
+	],
+	"children":[]
+}

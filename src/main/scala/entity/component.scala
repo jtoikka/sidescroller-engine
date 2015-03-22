@@ -36,7 +36,8 @@ object Component {
 	}
 }
 
-class Component() {}
+class Component() {
+}
 
 case class SpatialComponent(
 	rotation: Quaternion,
@@ -57,8 +58,7 @@ case class CameraComponent(
 	orthographic: Boolean) extends Component {}
 
 case class CollisionComponent(
-	hurtBoxes: Vector[CollisionShape],
-	hitBoxes: Vector[CollisionShape],
+	collisionBoxes: Vector[CollisionShape],
 	rigidBoxes: Vector[CollisionShape],
 	triggers: Vector[CollisionShape],
 	oneWay: Boolean) extends Component {}

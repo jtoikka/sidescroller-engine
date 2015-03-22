@@ -2,10 +2,10 @@ package physics
 
 import math.Vec2
 
-case class BoxCollision(
-	origin: Vec2, 
-	width: Int, 
-	height: Int) extends CollisionShape {
+class BoxCollision(
+	val origin: Vec2, 
+	val width: Int, 
+	val height: Int) extends CollisionShape {
 
 	val halfWidth = width/2.0f
 	val halfHeight = height/2.0f

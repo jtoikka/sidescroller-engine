@@ -5,9 +5,11 @@ import scene.Scene
 import entity.Component._
 import math._
 import math.VectorMath._
-import physics.CollisionTest
+import physics._
 import event.Event
 import spatial._
+import scala.collection.mutable.ArrayBuffer
+import event._
 
 case class PhysicalObject(
 	entity: Entity,
@@ -20,9 +22,7 @@ case class PhysicalObject(
 	friction: Float,
 	static: Boolean,
 	maxHorizontal: Float,
-	maxVertical: Float,
-	var onGround: Boolean = false,
-	var inAir: Boolean = false
+	maxVertical: Float
 	) extends Spatial {
 
 	def getPosition = position
@@ -73,7 +73,7 @@ class PhysicsSystem(globalForces: Vector[Vec3])
 		else d
 	}
 
-	def checkCollision(
+	def checkRigidCollision(
 		a: PhysicalObject, 
 		b: PhysicalObject,
 		time: Float,
@@ -94,7 +94,7 @@ class PhysicsSystem(globalForces: Vector[Vec3])
 			b.position
 		}
 
-		a.collision.hurtBoxes.foreach(hBox => {
+		a.collision.collisionBoxes.foreach(hBox => {
 			b.collision.rigidBoxes.foreach(rBox => {
 				if (b.collision.oneWay) {
 					if (a.velocity.y <= 0) {
@@ -119,6 +119,38 @@ class PhysicsSystem(globalForces: Vector[Vec3])
 		(greatestIntersection, Vector())
 	}
 
+	def checkTriggers(p: PhysicalObject, scene: Scene, delta: Float): Unit = {
+		spatialGrid.getInRange(
+			p.position.x - maxCollisionRange/2.0f,
+			p.position.y - maxCollisionRange/2.0f,
+			maxCollisionRange, maxCollisionRange).foreach(other => {
+			if (other.entity != p.entity) {
+				p.collision.triggers.foreach(tBox => {
+					other.collision.rigidBoxes.foreach(rBox => {
+						val intersect = CollisionTest(p.position, tBox, other.position, rBox)
+						def addTriggerEvent(tBox: CollisionShape) = {
+							tBox match {
+								case t: Trigger => {
+									p.entity.privateEvents += TriggerEvent(true, t.tag, other.entity)
+								}
+								case _ => throw new Exception("Invalid trigger shape")
+							}
+						}
+						if (intersect.lengthSquared != 0) {
+							if (other.collision.oneWay) {
+								if (intersect.y < 1.0f && intersect.y > 0) {
+									addTriggerEvent(tBox)
+								}
+							} else {
+								addTriggerEvent(tBox)
+							}
+						}
+					})
+				})
+			}
+		})
+	}
+
 	def findMaxCollision(
 		a: PhysicalObject, delta: Float,
 		lockX: Boolean = false,
@@ -131,7 +163,7 @@ class PhysicsSystem(globalForces: Vector[Vec3])
 			maxCollisionRange, maxCollisionRange).foreach(other => {
 				if (other.entity != a.entity) {
 					val (intersection, events) =
-						checkCollision(a, other, delta, lockX, lockY)
+						checkRigidCollision(a, other, delta, lockX, lockY)
 
 					if (intersection.lengthSquared != 0 && 
 						  colIntersect.lengthSquared < intersection.lengthSquared) {
@@ -143,7 +175,7 @@ class PhysicsSystem(globalForces: Vector[Vec3])
 		(colIntersect, collider)
 	}
 
-	val minPermittedCollision = 0.02f
+	val minPermittedCollision = 0.2f
 
 	def findPointOfCollision(
 		a: PhysicalObject, delta: Float,
@@ -173,7 +205,7 @@ class PhysicsSystem(globalForces: Vector[Vec3])
 		}
 	}
 
-	val maxCollisionRange = 60.0f
+	val maxCollisionRange = 30.0f
 
 	def reflection(v: Vec3, n: Vec3): Vec3 = {
 		v - (2 * (v.dot(n)) * n) 
@@ -221,10 +253,6 @@ class PhysicsSystem(globalForces: Vector[Vec3])
 
 						var frictionVel = frictionAccel * pointOfCollision
 
-						if (normal.y > 0) {
-							physObj.onGround = true
-							physObj.inAir = false
-						}
 						if ((tangent + frictionVel).normalize == tangent.normalize) {
 							bounce * physObj.bounciness + tangent - physObj.velocity + frictionVel
 						} else {
@@ -241,9 +269,6 @@ class PhysicsSystem(globalForces: Vector[Vec3])
 			if (physObj.velocity.x.abs > physObj.maxHorizontal) {
 				val d = (physObj.velocity.x.abs - physObj.maxHorizontal)
 				physObj.velocity -= Vec3((d * d) * physObj.velocity.x.signum, 0, 0)
-			}
-			if (lockY && normal.y != 0) {
-				physObj.inAir = false
 			}
 
 			applyPhysics(
@@ -275,17 +300,10 @@ class PhysicsSystem(globalForces: Vector[Vec3])
 						  friction * frictionMultiplier, 
 						  static, maxHorizontal, maxVertical)
 
-					physicalObj.inAir = true
-
 					applyPhysics(physicalObj, scene, delta)
+					checkTriggers(physicalObj, scene, delta)
 					val deltaPos = physicalObj.position - entity.position
 
-					if (physicalObj.onGround) {
-						entity.triggers("onGround") = true
-					}
-					if (physicalObj.inAir) {
-						entity.triggers("inAir") = true
-					}
 					Changes(entity, Vector(
 						Translation(physicalObj.position - entity.position), 
 						Acceleration(physicalObj.velocity - velocity)),

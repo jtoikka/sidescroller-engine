@@ -6,16 +6,23 @@ import entity.Component._
 import entity.InputComponent
 import scene.Scene
 import input._
+import math.Vec2
 
 class InputSystem extends System(bitMask(InputComp)) {
 	var pressedKeys = Vector[Int]()
 	var heldKeys = Vector[Int]()
 	var releasedKeys = Vector[Int]()
+	var mousePressed = Vector[Int]()
+	var mouseHeld = Vector[Int]()
+	var mouseReleased = Vector[Int]()
+	var cursor = Vec2(0, 0)
 
 	val inputReceivers = Map(
 		"pan" -> new PanInput(32.0f),
 		"playerGround" -> new PlayerInputGround(40.0f * 4.8f),
-		"playerAir" -> new PlayerInputAir(40.0f * 2.5f)
+		"playerAir" -> new PlayerInputAir(40.0f * 2.5f),
+		"cursor" -> new CursorInput(),
+		"button" -> new ButtonInput()
 	)
 
 	def instantiate(scene: Scene) = {}
@@ -42,7 +49,32 @@ class InputSystem extends System(bitMask(InputComp)) {
 				).map(pair => {
 					pair._2(delta, entity)
 				})
-				Changes(entity, (pressedChanges ++ heldChanges ++ releasedChanges).toVector, Vector())
+				val mousePressedChanges = receiver.mousePressedCallbacks.filter(pair => {
+					mousePressed.contains(pair._1)
+				}).map(pair => {
+					pair._2(delta, entity)
+				})
+				val mouseHeldChanges = receiver.mouseHeldCallbacks.filter(pair =>
+					mouseHeld.contains(pair._1)
+				).map(pair => {
+					pair._2(delta, entity)
+				})
+				val mouseReleasedChanges = receiver.mouseReleasedCallbacks.filter(pair =>
+					mouseReleased.contains(pair._1)
+				).map(pair => {
+					pair._2(delta, entity)
+				})
+				val cursorChanges = receiver.cursorCallbacks.map(input => 
+					input(cursor, entity)
+				)
+				Changes(entity, 
+					(pressedChanges ++ 
+					 heldChanges ++ 
+					 releasedChanges ++ 
+					 mousePressedChanges ++
+					 mouseHeldChanges ++
+					 mouseReleasedChanges ++
+					 cursorChanges).toVector, Vector())
 			}
 			case _ => Changes(entity, Vector(), Vector())
 		}
