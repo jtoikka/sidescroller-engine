@@ -4,8 +4,8 @@ import math.Vec2
 
 class BoxCollision(
 	val origin: Vec2, 
-	val width: Int, 
-	val height: Int) extends CollisionShape {
+	val width: Float, 
+	val height: Float) extends CollisionShape {
 
 	val halfWidth = width/2.0f
 	val halfHeight = height/2.0f

@@ -27,6 +27,8 @@ class ResourceManager(directory: String) {
 	private val PrefabDir = "prefabs"
 	private val StateMachineDir = "stateMachines"
 	private val ShaderDir = "shaders"
+	private val TemplateDir = "templates"
+	private val TiledMapDir = "tiledMap"
 
 	private def getFilesInFolder[T](folder: String): Map[String, Option[T]]= {
 		println("Getting files in folder: " + folder)
@@ -41,10 +43,12 @@ class ResourceManager(directory: String) {
 	private val meshes = getFilesInFolder[Mesh](MeshDir)
 	private val sounds = getFilesInFolder[Sound](SoundDir)
 	private val spriteSheets = getFilesInFolder[SpriteSheet](SpriteSheetDir)
-	private val animation = getFilesInFolder[Animation](AnimationDir)
+	private val animations = getFilesInFolder[Animation](AnimationDir)
 	private val prefabs = getFilesInFolder[Entity](PrefabDir)
 	private val stateMachines = getFilesInFolder[StateMachine](StateMachineDir)
 	private val shaderPrograms = Map[String, ShaderProgram]()
+	private val templates = getFilesInFolder[LevelTemplate](TemplateDir)
+ 	private val tiledMaps = getFilesInFolder[TiledMap](TiledMapDir)
 
 	def getTexture(name: String): Texture = {
 		val fullName = if (name.split('.').size > 1) name else name + ".png"
@@ -81,6 +85,24 @@ class ResourceManager(directory: String) {
 		}
 	}
 
+	def getAnimation(name: String): Animation = {
+		val fullName = if (name.split('.').size > 1) name else name + ".json"
+		if (animations.contains(fullName)) {
+			val animation = animations(fullName)
+			animation match {
+				case Some(anim) => anim
+				case None => {
+					val anim = 
+						loadAnimation(directory + AnimationDir + "/" + fullName)
+					animations(fullName) = Some(anim)
+					anim
+				}
+			}
+		} else {
+			throw new ResourceLoadException("Animation " + name + " does not exist.")
+		}
+	}
+
 	def getShaderProgram(name: String): ShaderProgram = {
 		if (shaderPrograms.contains(name)) {
 			shaderPrograms(name)
@@ -94,13 +116,14 @@ class ResourceManager(directory: String) {
 	}
 
 	def getMesh(name: String): Mesh = {
-		if (meshes.contains(name)) {
-			val mesh = meshes(name)
+		val fullName = if (name.split('.').size > 1) name else name + ".ply"
+		if (meshes.contains(fullName)) {
+			val mesh = meshes(fullName)
 			mesh match {
 				case Some(m) => m
 				case None => {
-					val m = Mesh(directory + MeshDir + "/" + name)
-					meshes(name) = Some(m)
+					val m = Mesh(directory + MeshDir + "/" + fullName)
+					meshes(fullName) = Some(m)
 					m
 				}
 			}
@@ -134,6 +157,42 @@ class ResourceManager(directory: String) {
 		}
 	}
 
+	def getTemplate(name: String): LevelTemplate = {
+		val fullName = if (name.split('.').size > 1) name else name + ".lvl"
+		if (templates.contains(fullName)) {
+			val template = templates(fullName)
+			template match {
+				case Some(t) => t
+				case None => {
+					val t = new LevelTemplate(directory + TemplateDir + "/" + fullName)
+					templates(fullName) = Some(t)
+					t
+				}
+			}
+		} else {
+			throw new ResourceLoadException("Template " + name + " does not exist.")
+		}
+	}
+
+	def getTiledMap(name: String): TiledMap = {
+		val fullName = if (name.split('.').size > 1) name else name + ".json"
+		if (tiledMaps.contains(fullName)) {
+			val tiledMap = tiledMaps(fullName)
+			tiledMap match {
+				case Some(tiled) => tiled
+				case None => {
+					val tiled = 
+						loadTiledMap(directory + TiledMapDir + "/" + fullName)
+					tiledMaps(fullName) = Some(tiled)
+					meshes(name + ".ply") = Some(tiled.toMesh)
+					tiled
+				}
+			}
+		} else {
+			throw new ResourceLoadException("Animation " + name + " does not exist.")
+		}
+	}
+
 	private def loadTexture(filePath: String): Texture = {
 		try {
       val file = new File(filePath)
@@ -148,6 +207,14 @@ class ResourceManager(directory: String) {
 
 	private def loadSpriteSheet(filePath: String): SpriteSheet = {
 		SpriteSheet(filePath)
+	}
+
+	private def loadAnimation(filePath: String): Animation = {
+		Animation(filePath)
+	}
+
+	private def loadTiledMap(filePath: String): TiledMap = {
+		TiledMap(filePath)
 	}
 
 	private def loadShaderProgram() = {}

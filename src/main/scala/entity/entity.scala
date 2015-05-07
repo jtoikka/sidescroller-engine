@@ -65,6 +65,7 @@ case class Entity(
 				case comp: PhysicsComponent => comp.copy()
 				case comp: AnimationComponent => comp.copy()
 				case comp: InputComponent => comp.copy()
+				case comp: ModelComponent => comp.copy()
 				case comp: BehaviourComponent => {
 					BehaviourComponent(comp.behaviours.map(b => {
 						BehaviourManager.copy(b)

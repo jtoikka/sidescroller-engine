@@ -42,7 +42,7 @@ object PrefabLoader extends DefaultJsonProtocol {
 
 		def read(value: JsValue) = {
 			val vec = value.convertTo[Vector[Float]]
-			Quaternion(vec(0), vec(1), vec(2), vec(3))
+			Quaternion.axisAngle(vec(0), vec(1), vec(2), vec(3))
 		}
 	}
 
@@ -161,9 +161,10 @@ object PrefabLoader extends DefaultJsonProtocol {
 						mass.toFloat, 
 						bounciness.toFloat, 
 						friction.toFloat, 
+						1.0f,
 						maxHorizontal.toFloat,
 						maxVertical.toFloat, 
-						1.0f, static)
+						static)
 				}
 			}
 		}
@@ -175,7 +176,7 @@ object PrefabLoader extends DefaultJsonProtocol {
 	implicit lazy val cameraFormat = jsonFormat5(CameraComponent)
 	implicit lazy val collisionFormat = jsonFormat4(CollisionComponent)
 	// implicit lazy val physicsFormat = jsonFormat6(PhysicsComponent)
-	implicit lazy val animationFormat = jsonFormat2(AnimationComponent)
+	implicit lazy val animationFormat = jsonFormat3(AnimationComponent)
 	implicit lazy val inputFormat = jsonFormat1(InputComponent)
 	implicit lazy val behaviourFormat = jsonFormat1(BehaviourComponent)
 

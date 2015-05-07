@@ -26,6 +26,7 @@ class Renderer(screenWidth: Int, screenHeight: Int) {
 		glEnable(GL_BLEND)
     glEnable(GL_DEPTH_TEST)
     glEnable(GL_CULL_FACE)
+    // glDisable(GL_CULL_FACE)
     glEnable(GL_TEXTURE_2D)
     glDepthFunc(GL_LEQUAL)
     glCullFace(GL_BACK)
@@ -55,17 +56,17 @@ class Renderer(screenWidth: Int, screenHeight: Int) {
 		renderSpritesToScreen(resourceManager, spriteShaderProgram)
 	}
 
-	def setProgram(program: ShaderProgram) = {
+	private def setProgram(program: ShaderProgram) = {
 		glUseProgram(program.id)
 	}
 
-	def setCameraMatrix(camera: Entity, program: ShaderProgram) = {
+	private def setCameraMatrix(camera: Entity, program: ShaderProgram) = {
     camera(CameraComp) match {
       case Some(CameraComponent(zNear, zFar, width, height, orthographic)) => {
-        val camLeft = camera.position.x - width / 2.0f
-        val camRight = camera.position.x + width / 2.0f
-        val camUp = camera.position.y - height / 2.0f
-        val camDown = camera.position.y + height / 2.0f
+        val camLeft = camera.position.x.floor - width / 2.0f
+        val camRight = camera.position.x.floor + width / 2.0f
+        val camUp = camera.position.y.floor - height / 2.0f
+        val camDown = camera.position.y.floor + height / 2.0f
 
         // TODO: Add perspective projection
         val cameraToClip = Camera.orthographicProjection4(
@@ -84,13 +85,13 @@ class Renderer(screenWidth: Int, screenHeight: Int) {
     }
 	}
 
-	def setCameraMatrix2D(camera: Entity, program: ShaderProgram) = {
+	private def setCameraMatrix2D(camera: Entity, program: ShaderProgram) = {
     camera(CameraComp) match {
       case Some(CameraComponent(zNear, zFar, width, height, orthographic)) => {
-        val camLeft = camera.position.x - width / 2.0f
-        val camRight = camera.position.x + width / 2.0f
-        val camUp = camera.position.y - height / 2.0f
-        val camDown = camera.position.y + height / 2.0f
+        val camLeft = camera.position.x.floor - width / 2.0f
+        val camRight = camera.position.x.floor + width / 2.0f
+        val camUp = camera.position.y.floor - height / 2.0f
+        val camDown = camera.position.y.floor + height / 2.0f
 
         // TODO: Add perspective projection
         val cameraToClip = Camera.orthographicProjection3(
@@ -109,12 +110,13 @@ class Renderer(screenWidth: Int, screenHeight: Int) {
     }
 	}
 
-	def renderEntity(
+	private def renderEntity(
 		entity: Entity, 
 		resourceManager: ResourceManager, 
 		program: ShaderProgram) = {
 		entity(ModelComp) match {
 			case Some(ModelComponent(meshId, textureId)) => {
+				// println("Rendering: " + meshId)
 				val transformation = entity(SpatialComp) match {
 					case Some(SpatialComponent(rotation, scale)) => {
 						Utility.scaleMatrix(scale) * 
@@ -131,6 +133,13 @@ class Renderer(screenWidth: Int, screenHeight: Int) {
         glUniformMatrix4(
         	program.uniforms("modelToCameraMatrix"), false, transBuffer)
 
+
+        glActiveTexture(GL_TEXTURE0)
+		    val texIndex = getTexture(textureId, resourceManager)
+		    val texUnif = glGetUniformLocation(program.id, textureId)
+		    glUniform1i(texUnif, texIndex)
+		    glBindTexture(GL_TEXTURE_2D, texIndex)
+
         renderMesh(resourceManager.getMesh(meshId), program)
 			}
 			case _ => 
@@ -143,7 +152,7 @@ class Renderer(screenWidth: Int, screenHeight: Int) {
 		}
 	}
 
-	def renderMesh(mesh: Mesh, program: ShaderProgram) = {
+	private def renderMesh(mesh: Mesh, program: ShaderProgram) = {
 		glBindBuffer(GL_ARRAY_BUFFER, mesh.vertexBufferId)
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.indexBufferId)
 
@@ -151,7 +160,7 @@ class Renderer(screenWidth: Int, screenHeight: Int) {
 	  	program.attributes("position"),
 	  	3, GL_FLOAT, false, NumBytesFloat * 8, 0)
     glVertexAttribPointer(
-	  	program.attributes("position"),
+	  	program.attributes("normal"),
 	  	3, GL_FLOAT, false, NumBytesFloat * 8, NumBytesFloat * 3)
 	  glVertexAttribPointer(
 	  	program.attributes("uv"), 
@@ -163,9 +172,32 @@ class Renderer(screenWidth: Int, screenHeight: Int) {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)
 	}
 
+	// private def renderLines(mesh: Mesh, program: ShaderProgram) = {
+	// 	glBindBuffer(GL_ARRAY_BUFFER, mesh.vertexBufferId)
+	// 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.indexBufferId)
 
+	// 	glVertexAttribPointer(
+	// 		program.attributes("position"),
+	//   	2, GL_FLOAT, false, NumBytesFloat * 6, 0)
+	// 	)
+	// 	glVertexAttribPointer(
+	// 		program.attributes("colour"),
+	//   	4, GL_FLOAT, false, NumBytesFloat * 6, NumBytesFloat * 2)
+	// 	)
 
-	def renderSprite(entity: Entity, resourceManager: ResourceManager) = {
+	// 	glDrawElements(GL_TRIANGLES, mesh.numIndices, GL_UNSIGNED_SHORT, 0)
+
+	// 	glBindBuffer(GL_ARRAY_BUFFER, 0)
+	// 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)
+	// }
+
+/**
+	* Adds a sprite to the sprite Map.
+	*/
+
+	private def renderSprite(
+		entity: Entity, 
+		resourceManager: ResourceManager) = {
 		entity(SpriteComp) match {
 			case Some(SpriteComponent(spriteId, spriteSheetId, layer)) => {
 				val sheet = resourceManager.getSpriteSheet(spriteSheetId)
@@ -174,10 +206,15 @@ class Renderer(screenWidth: Int, screenHeight: Int) {
 				val halfWidth = sprite.w / 2.0f
 				val halfHeight = sprite.h / 2.0f
 
-				val x1 = entity.position.x - halfWidth
-				val x2 = entity.position.x + halfWidth
-				val y1 = entity.position.y + halfHeight
-				val y2 = entity.position.y - halfHeight
+				val scale = entity(SpatialComp) match {
+					case Some(s) => s.scale
+					case _ => Vec3(1, 1, 1)
+				}
+
+				val x1 = entity.position.x - halfWidth * scale.x
+				val x2 = entity.position.x + halfWidth * scale.x
+				val y1 = entity.position.y + halfHeight * scale.y
+				val y2 = entity.position.y - halfHeight * scale.y
 
 				// Texture coordinates
         val ux = sprite.x / sheet.width.toFloat
@@ -205,9 +242,26 @@ class Renderer(screenWidth: Int, screenHeight: Int) {
 		}
 	}
 
-	var spriteVBO = 0
+	// private def renderLines(
+	// 	entity: Entity,
+	// 	resourceManager: ResourceManager) = {
+	// 	entity(LineComp) match {
+	// 		case Some(LineComponent(mesh)) => {
+	// 			val scale = entity(SpatialComp) match {
+	// 				case Some(s) => s.scale
+	// 				case _ => Vec3(1, 1, 1)
+	// 			}
 
-	def renderSpritesToScreen(resourceManager: ResourceManager, program: ShaderProgram) = {
+
+	// 		}
+	// 	}
+	// }
+
+	private var spriteVBO = 0
+
+	private def renderSpritesToScreen(
+		resourceManager: ResourceManager, 
+		program: ShaderProgram) = {
 		spriteMap.foreach {case (spriteSheetId, depthMap) => {
 			val sheet = resourceManager.getSpriteSheet(spriteSheetId)
 			val tex = sheet.texture
@@ -255,7 +309,7 @@ class Renderer(screenWidth: Int, screenHeight: Int) {
     }
   }
 
-	def loadTexture(name: String, texture: resource.Texture): Int = {
+	private def loadTexture(name: String, texture: resource.Texture): Int = {
     val id = glGenTextures()
     texture.bind(id)
     glTexImage2D(

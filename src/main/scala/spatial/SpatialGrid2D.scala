@@ -124,6 +124,44 @@ class SpatialGrid2D[T <: Spatial](
 			outOfBounds
 	}
 
+	def getBelow(i: Int): Int = i - columns
+
+	def getAbove(i: Int): Int = {
+		val n = i + columns
+		if (n >= grid.size) -1
+		else n
+	}
+
+	def getRight(i: Int): Int = {
+		if (i % columns == columns - 1) -1
+		else i + 1
+	}
+
+	def getLeft(i: Int): Int = {
+		if (i % columns == 0) -1
+		else i - 1
+	}
+
+	def getSurrounding(x: Float, y: Float): Vector[T] = {
+		val i = getIndex(x, y)
+		if (i < 0) {
+			grid.flatten.toVector // This will cause major slow down. Avoid getting
+														// items out of bounds!
+		} else {
+			val in = if (i > 0) getAbove(i) else -1
+			val inw = if (in > 0) getLeft(in) else -1
+			val ine = if (in >= 0) getRight(in) else -1
+			val w = if (i > 0) getLeft(i) else -1
+			val e = if (i >= 0) getRight(i) else -1
+			val is = if (i >= 0) getBelow(i) else -1
+			val isw = if (is > 0) getLeft(is) else -1
+			val ise = if (is > 0) getRight(is) else -1
+
+			val indices = Seq(i, in, inw, ine, w, e, is, isw, ise).filter(_ >= 0)
+			indices.flatMap(grid(_)).toVector ++ outOfBounds
+		}
+	}
+
 /**
   * Applies a function for each element.
   */

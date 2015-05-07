@@ -6,19 +6,27 @@ import scene.Scene
 import system._
 import math._
 import event._
+import scala.collection.mutable.ArrayBuffer
 
 class JumpBehaviour(val args: List[String]) extends Behaviour {
-	val Speed = 85.0f
-	val TerminalSpeed = 10.0f
+	val Speed = 50.0f //29.0f * 2
+	val InitialSpeed = 60.0f //88.55f
+	// val TerminalSpeed = 20.0f * 2
+	val EndTime = 0.18f
+	val AdjustedSpeed = Speed / EndTime
+
+	val airSpeedX = 80.0f // This shouldn't be here...
+
 	override def initialize(entity: Entity, scene: Scene): Unit = {
 		if (!initialized) {
-			entity.timers("jump") = new Timer(0.12f, 0.8f)
+			entity.timers("jump") = new Timer(0.06f, EndTime)
 			initialized = true
 		}
 	}
 
 	var jumping = false
 	override def fixedUpdate(entity: Entity, scene: Scene, delta: Float): Changes = {
+		// Check to see if player is on the ground, and set the appropriate triggers
 		if (entity.privateEvents.find(event => {
 			event match {
 				case t: TriggerEvent if (t.triggerName == "groundCheck") => {
@@ -31,41 +39,42 @@ class JumpBehaviour(val args: List[String]) extends Behaviour {
 		} else {
 			entity.triggers("inAir") = true
 		}
+
+		val changes = ArrayBuffer[StateChange]()
+
+		// If the player is jumping, accelerate vertically
 		if (entity.timers.contains("jump")) {
 			val jumpTimer = entity.timers("jump")
+			val time = jumpTimer.time
 			if (jumpTimer.isRunning) {
-				if (jumpTimer.time == 0) {
+				if (time == 0) {
 					jumping = true
-					Changes(
-					entity, Vector(
-						Acceleration(
-							Vec3(0, 1, 0) * Speed)
-						)
-					)
+					changes += Acceleration(Vec3(0, 1, 0) * InitialSpeed)
 				} else {
-					Changes(entity)
+					val timeLeft = EndTime - time
+					changes += Acceleration(
+						Vec3(0, 1, 0) * AdjustedSpeed * scala.math.pow(timeLeft, 1.2).toFloat
+					)
 				}
-			} else if (jumping) {
-				jumping = false
-				entity(PhysicsComp) match {
-					case Some(phys: PhysicsComponent) => {
-						if (phys.velocity.y > 0) {
-							Changes(
-								entity, Vector(
-										Acceleration(Vec3(0, -1.0f, 0) * phys.velocity.y + Vec3(0, 1, 0) * TerminalSpeed)
-									)
-							)
-						} else {
-							Changes(entity)
+			}
+		}
+		if (entity.triggers("inAir")) {
+			entity(PhysicsComp) match {
+				case Some(p) => {
+					if (!entity.flags("movingLeft") && !entity.flags("movingRight") || entity.flags("movingLeft") && entity.flags("movingRight")) {
+						changes += SetVelocity(Vec3(0, 1, 1), Vec3(0, 0, 0))
+					} else {
+						if (entity.flags("movingLeft")) {
+							changes += SetVelocity(Vec3(0, 1, 1), Vec3(-airSpeedX , 0, 0))
+						}
+						if (entity.flags("movingRight")) {
+							changes += SetVelocity(Vec3(0, 1, 1), Vec3(airSpeedX , 0, 0))
 						}
 					}
-					case _ => Changes(entity)
 				}
-			} else {
-				Changes(entity)
+				case _ =>
 			}
-		} else {
-			Changes(entity)
 		}
+		Changes(entity, changes.toVector)
 	}
 }

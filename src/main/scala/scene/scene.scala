@@ -14,7 +14,6 @@ class Scene(
   val systems: Vector[System],
   val camera: Entity) {
 	val entities = new SpatialGrid2D[Entity](width, height, columns, rows)
-	// val entities = new SpatialGrid[Entity]()
 
 	entities += camera
 
@@ -28,9 +27,11 @@ class Scene(
 				case Changes(entity, stateChanges, events) => {
 					val oldPos = entity.position
 					stateChanges.foreach {_.applyTo(entity)}
-					// If the entity has moved, move it in the spatial grid
 					if (oldPos != entity.position) {
 						entities.move(entity, oldPos)
+					}
+					if (entity.isDestroyed) {
+						entities -= entity
 					}
 					events
 				}

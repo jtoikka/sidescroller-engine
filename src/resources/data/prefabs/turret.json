@@ -1,0 +1,67 @@
+{
+	"position": [0.0, 0.0, -50.0],
+	"tag":"enemy",
+	"components":[
+		{
+			"type":"spatial",
+			"rotation": [1.0, 1.0, 0.0, 0.2],
+			"scale": [2.0, 2.0, 1.0]
+		},
+		{
+			"type":"sprite",
+			"sprite":"0",
+			"spriteSheet":"tiles",
+			"layer":0
+		},
+		{
+			"type":"input",
+			"inputReceiver":"playerAir"
+		},
+		{
+			"type":"physics",
+			"velocity": [0.0, 0.0, 0.0],
+			"acceleration": [0.0, 0.0, 0.0],
+			"mass": 1.0,
+			"bounciness": 0.0,
+			"friction": 1.0,
+			"maxHorizontal": 0.0,
+			"maxVertical": 0.0,
+			"static": true
+		},
+		{
+			"type":"collision",
+			"collisionBoxes":[
+				{
+					"type":"box",
+					"origin": [0.0, 0.0],
+					"width": 16.0,
+					"height": 16.0
+				}
+			],
+			"rigidBoxes":[
+				{
+					"type":"box",
+					"origin": [0.0, 0.0],
+					"width": 16.0,
+					"height": 16.0
+				}
+			],
+			"triggers":[],
+			"oneWay":true
+		},
+		{
+			"type":"state",
+			"stateMachine":"player"
+		},
+		{
+			"type":"behaviour",
+			"behaviours":[
+				{
+					"type":"turret",
+					"parameters":[]
+				}
+			]
+		}
+	],
+	"children":[]
+}

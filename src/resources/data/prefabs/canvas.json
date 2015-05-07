@@ -1,0 +1,35 @@
+{
+	"position":[0.0, 0.0, -10.0],
+	"tag":"button",
+	"components":[
+		{
+			"type":"spatial",
+			"rotation": [1.0, 1.0, 0.0, 0.0],
+			"scale": [1.0, 1.0, 1.0]
+		},
+		{
+			"type":"model",
+			"mesh":"grid",
+			"texture":"grid"
+		},
+		{
+			"type":"input",
+			"inputReceiver":"button"
+		},
+		{
+			"type":"collision",
+			"collisionBoxes":[],
+			"rigidBoxes":[],
+			"triggers":[
+				{
+					"type":"triggerBox",
+					"origin": [0.0, 0.0, 0.0],
+					"width": 640.0,
+					"height": 360.0,
+					"tag":"button"
+				}],
+			"oneWay":false
+		}
+	],
+	"children":[]
+}

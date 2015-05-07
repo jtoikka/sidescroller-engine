@@ -2,6 +2,14 @@ package math
 
 import scala.math.{sin, cos, sqrt}
 
+object Quaternion {
+	def axisAngle(x: Float, y: Float, z: Float, angle: Float): Quaternion = {
+		val halfAngle = angle / 2.0f
+		val sinAng = sin(halfAngle).toFloat
+		Quaternion(x * sinAng, y * sinAng, z * sinAng, cos(halfAngle).toFloat)
+	}
+}
+
 case class Quaternion(x: Float, y: Float, z: Float, w: Float) {
 
 	def * (b: Quaternion) = {

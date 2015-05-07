@@ -11,4 +11,55 @@
 		{"name":"walkright7", "duration":0.15},
 		{"name":"walkright8", "duration":0.15}
 	]
-}]
+},
+{
+	"name":"stand_right",
+	"frames":[
+		{"name":"standright", "duration":10.0}
+	]
+},
+{
+	"name":"jump_right",
+	"frames":[
+		{"name":"jumpright", "duration":10.0}
+	]
+},
+{
+	"name":"fall_right",
+	"frames":[
+		{"name":"fallright", "duration":10.0}
+	]
+},
+{
+	"name":"walk_left",
+	"frames":[
+		{"name":"walkleft1", "duration":0.15}, 
+		{"name":"walkleft2", "duration":0.15},
+		{"name":"walkleft3", "duration":0.15},
+		{"name":"walkleft4", "duration":0.15},
+		{"name":"walkleft5", "duration":0.15},
+		{"name":"walkleft6", "duration":0.15},
+		{"name":"walkleft7", "duration":0.15},
+		{"name":"walkleft8", "duration":0.15}
+	]
+},
+{
+	"name":"stand_left",
+	"frames":[
+		{"name":"standleft", "duration":10.0}
+	]
+},
+{
+	"name":"jump_left",
+	"frames":[
+		{"name":"jumpleft", "duration":10.0}
+	]
+},
+{
+	"name":"fall_left",
+	"frames":[
+		{"name":"fallleft", "duration":10.0}
+	]
+}
+
+]

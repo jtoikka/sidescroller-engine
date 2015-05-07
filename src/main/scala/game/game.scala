@@ -22,17 +22,21 @@ import event._
 import resource.PrefabLoader
 
 
+// The main class
 object Main extends App with Listener {
-  val WIDTH = 640
-  val HEIGHT = 360
-  
+  // Screen dimensions in pixels
+  val WIDTH = 832 //854
+  val HEIGHT = 480
+
   val errorCallback = errorCallbackPrint(System.err)
 
   val inputManager = new InputManager()
   val eventManager = new EventManager()
 
+  // Add self to list of listeners
   eventManager.addListener(this)
 
+  // Mouse positions
   var xPos = BufferUtils.createDoubleBuffer(1)
   var yPos = BufferUtils.createDoubleBuffer(1)
 
@@ -55,6 +59,7 @@ object Main extends App with Listener {
   // Window handle
   var window: Long = 0
   
+  // The program starts running at this point
   def run(): Unit = {
     // println("Hello LWJGL " + Sys.getVersion + "!")
     try {
@@ -72,6 +77,7 @@ object Main extends App with Listener {
     }
   }
   
+  // Initializes window settings and callbacks
   private def init(): Unit = {
     glfwSetErrorCallback(errorCallback)
     
@@ -112,21 +118,26 @@ object Main extends App with Listener {
     glfwShowWindow(window)
 
     GLContext.createFromCurrent()
+
+    val menuScene = SceneFactory.createMenu(resourceManager)
+    val gameScene = SceneFactory.createGame(resourceManager)
+
+    inactiveScenes("game") = gameScene
+    activeScenes("menu") = menuScene
  
     // Set the clear color
-    glClearColor(230.0f/255.0f, 230.0f/255.0f, 230.0f/255.0f, 0.0f)
+    // glClearColor(230.0f/255.0f, 230.0f/255.0f, 230.0f/255.0f, 0.0f)
 
-    glEnable(GL_BLEND)
-    glEnable(GL_DEPTH_TEST)
-    glEnable(GL_CULL_FACE)
-    glDepthFunc(GL_LEQUAL)
-    glCullFace(GL_BACK)
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
   }
 
+  // Inactive scenes are frozen, whilst update methods are caled for active
+  // scenes. The game also renders any active scenes.
   val inactiveScenes = scala.collection.mutable.Map[String, Scene]()
   val activeScenes = scala.collection.mutable.Map[String, Scene]()
 
+  val resourceManager = new ResourceManager("src/resources/data/")
+
+  // Handles any accumulated events.
   def handleEvents(): Unit = {
     for (event <- events) {
       event match {
@@ -137,30 +148,30 @@ object Main extends App with Listener {
           activeScenes.remove(e.inactivate)
           println("handeled")
         }
+        case e: EntitySpawnEvent => {
+          val ent = resourceManager.getPrefab(e.prefab, e.position)
+          // TODO: modifications
+          e.scene.addEntity(ent)
+        }
       }
     }
     events.clear()
   }
 
-
+  // The game loop itself. Takes care of updating, rendering and polling inputs.
   private def loop() = {
-
-    val resourceManager = new ResourceManager("src/resources/data/")
-
-    val menuScene = SceneFactory.createMenu(resourceManager)
-    val testScene = SceneFactory.createTestLevel(resourceManager)
-
-    inactiveScenes("test") = testScene
-    activeScenes("menu") = menuScene
-
     val renderer = new Renderer(WIDTH, HEIGHT)
 
     glfwSetTime(0)
     var timer = 0.0
     var frameCount = 0
     var longestFrame = 0.0
+    var longestRender = 0.0
+    var longestTotal = 0.0
     var frameAccumulator = 0.0
     while (glfwWindowShouldClose(window) == GL_FALSE) {
+      val frameStart = System.nanoTime()
+
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT) // clear the framebuffer
 
       val delta = glfwGetTime()
@@ -172,6 +183,7 @@ object Main extends App with Listener {
 
       // fixed update
       while(frameAccumulator >= FrameDuration) {
+        val before = System.nanoTime()
         glfwGetCursorPos(window, xPos, yPos)
         val x = xPos.get(0)
         val y = HEIGHT - yPos.get(0)
@@ -184,7 +196,6 @@ object Main extends App with Listener {
             inputs._4, inputs._5, inputs._6,
             inputs._7)
         )
-        val before = System.nanoTime()
         activeScenes.values.foreach(
           _.update(FrameDuration.toFloat, eventManager)
         )
@@ -192,22 +203,35 @@ object Main extends App with Listener {
         val after = System.nanoTime()
         longestFrame = scala.math.max(longestFrame, (after - before) / 1000000.0)
       }
-
+      val before = System.nanoTime()
       activeScenes.values.foreach(renderer.renderScene(_, resourceManager))
+      val after = System.nanoTime()
+
+      longestRender = scala.math.max(longestRender, (after - before) / 1000000.0)
 
       // Print frame rate
       timer += delta
       frameCount += 1
       // longestFrame = scala.math.max(delta, 0)
+
+      val frameEnd = System.nanoTime()
+
+      glfwSwapBuffers(window)
+      glfwPollEvents()
+
+      longestTotal = scala.math.max(longestTotal, (frameEnd - frameStart) / 1000000.0)
+
       if (timer > 1) {
         println("FPS: " + frameCount)
         timer -= 1
         frameCount = 0
         println("Longest frame: " + longestFrame + "ms")
+        println("Longest render: " + longestRender + "ms")
+        println("Longest total: " + longestTotal + "ms")
         longestFrame = 0
+        longestRender = 0
+        longestTotal = 0
       }
-      glfwSwapBuffers(window)
-      glfwPollEvents()
     }
   }
   

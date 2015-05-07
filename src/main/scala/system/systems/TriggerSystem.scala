@@ -22,7 +22,7 @@ class TriggerSystem extends System(bitMask(CollisionComp)) {
 					val bCol = other(CollisionComp).get
 
 					aCol.triggers.foreach(aBox => {
-						bCol.triggers.foreach(bBox => {
+						(bCol.triggers ++ bCol.collisionBoxes).foreach(bBox => {
 							val intersect = 
 								CollisionTest(entity.position, aBox, other.position, bBox)
 							def addTriggerEvent(box: CollisionShape) = {

@@ -17,10 +17,12 @@ class InputSystem extends System(bitMask(InputComp)) {
 	var mouseReleased = Vector[Int]()
 	var cursor = Vec2(0, 0)
 
+
+	// The values need to be moved elsewhere
 	val inputReceivers = Map(
 		"pan" -> new PanInput(32.0f),
-		"playerGround" -> new PlayerInputGround(40.0f * 4.8f),
-		"playerAir" -> new PlayerInputAir(40.0f * 2.5f),
+		"playerGround" -> new PlayerInputGround(40.0f * 4.8f * 2),
+		"playerAir" -> new PlayerInputAir(40.0f * 8.5f * 2),
 		"cursor" -> new CursorInput(),
 		"button" -> new ButtonInput()
 	)

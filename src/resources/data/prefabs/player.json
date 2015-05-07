@@ -1,17 +1,23 @@
 {
-	"position": [0.0, 0.0, 0.0],
+	"position": [0.0, 0.0, -50.0],
 	"tag":"player",
 	"components":[
 		{
 			"type":"spatial",
-			"rotation": [0.0, 1.0, 0.0, 0.0],
+			"rotation": [1.0, 1.0, 0.0, 0.2],
 			"scale": [1.0, 1.0, 1.0]
 		},
 		{
 			"type":"sprite",
-			"sprite":"1",
-			"spriteSheet":"tiles",
+			"sprite":"standright",
+			"spriteSheet":"playerSprite",
 			"layer":0
+		},
+		{
+			"type":"animation",
+			"animationSheet":"player_anim",
+			"animation":"walk_right",
+			"timer":0.0
 		},
 		{
 			"type":"input",
@@ -24,8 +30,8 @@
 			"mass": 1.0,
 			"bounciness": 0.0,
 			"friction": 2.2,
-			"maxHorizontal": 40.0,
-			"maxVertical": 50.0,
+			"maxHorizontal": 80.0,
+			"maxVertical": 100.0,
 			"static": false
 		},
 		{
@@ -35,21 +41,21 @@
 					"type":"box",
 					"origin": [0.0, 0.0],
 					"width": 8.0,
-					"height": 8.0
+					"height": 16.0
 				}
 			],
 			"rigidBoxes":[],
 			"triggers":[
 				{
 					"type":"triggerBox",
-					"origin": [0.0, -4.5],
+					"origin": [0.0, -8.5],
 					"width": 8.0,
 					"height": 0.5,
 					"tag": "groundCheck"
 				}
 			],
 			"oneWay":false
-		},
+		},	
 		{
 			"type":"state",
 			"stateMachine":"player"
@@ -59,6 +65,10 @@
 			"behaviours":[
 				{
 					"type":"jump",
+					"parameters":[]
+				},
+				{
+					"type":"shoot",
 					"parameters":[]
 				}
 			]

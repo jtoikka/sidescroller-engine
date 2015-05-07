@@ -1,6 +1,6 @@
 package entity
 
-case class Timer(minTime: Float, maxTime: Float) {
+case class Timer(minTime: Float = 0.0f, maxTime: Float) {
 	private var running = false
 	private var timeSeconds = 0.0f
 	private var resetOnceMin = false

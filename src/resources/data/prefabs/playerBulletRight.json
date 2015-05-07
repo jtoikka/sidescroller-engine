@@ -1,0 +1,52 @@
+{
+	"position":[0.0, 0.0, 0.0],
+	"tag":"bullet",
+	"components":[
+		{
+			"type":"spatial",
+			"rotation": [0.0, 1.0, 0.0, 0.0],
+			"scale": [1.0, 1.0, 1.0]
+		},
+		{
+			"type":"sprite",
+			"sprite":"0",
+			"spriteSheet":"tiles",
+			"layer":0
+		},
+		{
+			"type":"physics",
+			"velocity": [200.0, 0.0, 0.0],
+			"acceleration": [0.0, 470.88, 0.0],
+			"mass": 0.0,
+			"bounciness": 0.0,
+			"friction": 0.0,
+			"maxHorizontal": 500.0,
+			"maxVertical": 100.0,
+			"static": false
+		},
+		{
+			"type":"collision",
+			"collisionBoxes":[],
+			"rigidBoxes":[],
+			"triggers":[
+				{
+					"type":"triggerBox",
+					"origin": [0.0, 0.0],
+					"width": 8.0,
+					"height": 8.0,
+					"tag":"damage"
+				}],
+			"oneWay":false
+		},
+		{
+			"type":"behaviour",
+			"behaviours":[
+				{
+					"type":"destroyOnCollision",
+					"parameters":[]
+				}
+			]
+		}
+	],
+	"children":[]
+}

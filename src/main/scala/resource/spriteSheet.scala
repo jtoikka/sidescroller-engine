@@ -15,7 +15,7 @@ class SpriteSheet(
   	if (sprites.contains(spriteId)) {
   		sprites(spriteId)
   	} else {
-  		throw new Exception("Sprite " + spriteId + " not found.")
+  		throw new Exception("Sprite " + spriteId + " not found in sheet: " + texture)
   	}
   }
 }

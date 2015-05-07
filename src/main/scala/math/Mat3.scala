@@ -5,7 +5,7 @@ object Mat3 {
     Mat3(0, 0, 0, 0, 0, 0, 0, 0, 0)
   }
 
-  def identity(): Mat3= {
+  val identity = {
     Mat3(
       1, 0, 0,
       0, 1, 0,

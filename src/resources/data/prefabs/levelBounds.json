@@ -1,0 +1,22 @@
+{
+	"position":[0.0, 0.0, -10.0],
+	"tag":"guide",
+	"components":[
+		{
+			"type":"spatial",
+			"rotation": [1.0, 1.0, 0.0, 0.0],
+			"scale": [512.0, 320.0, 1.0]
+		},
+		{
+			"type":"sprite",
+			"sprite":"green30",
+			"spriteSheet":"tiles",
+			"layer":0
+		},
+		{
+			"type":"input",
+			"inputReceiver":"button"
+		}
+	],
+	"children":[]
+}

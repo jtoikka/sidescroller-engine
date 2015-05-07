@@ -11,6 +11,8 @@ import spatial._
 import scala.collection.mutable.ArrayBuffer
 import event._
 
+//TODO: Make collision detection relative to greatest velocity component
+
 case class PhysicalObject(
 	entity: Entity,
 	var position: Vec3,
@@ -99,7 +101,7 @@ class PhysicsSystem(globalForces: Vector[Vec3])
 				if (b.collision.oneWay) {
 					if (a.velocity.y <= 0) {
 						val startCollision = CollisionTest(a.position, hBox, newPosB, rBox)
-						if (startCollision.lengthSquared == 0) {
+						if (startCollision.lengthSquared < 0.2f) {
 							val intersect = CollisionTest(newPosA, hBox, newPosB, rBox)
 							if (intersect.y > 0) {
 								if (greatestIntersection.lengthSquared < intersect.lengthSquared) {
@@ -120,10 +122,9 @@ class PhysicsSystem(globalForces: Vector[Vec3])
 	}
 
 	def checkTriggers(p: PhysicalObject, scene: Scene, delta: Float): Unit = {
-		spatialGrid.getInRange(
-			p.position.x - maxCollisionRange/2.0f,
-			p.position.y - maxCollisionRange/2.0f,
-			maxCollisionRange, maxCollisionRange).foreach(other => {
+		spatialGrid.getSurrounding(
+			p.position.x,
+			p.position.y).foreach(other => {
 			if (other.entity != p.entity) {
 				p.collision.triggers.foreach(tBox => {
 					other.collision.rigidBoxes.foreach(rBox => {
@@ -157,20 +158,17 @@ class PhysicsSystem(globalForces: Vector[Vec3])
 		lockY: Boolean = false): (Vec2, Option[PhysicalObject]) = {
 		var colIntersect = Vec2(0, 0)
 		var collider: Option[PhysicalObject] = None
-		spatialGrid.getInRange(
-			a.position.x - maxCollisionRange/2.0f,
-			a.position.y - maxCollisionRange/2.0f,
-			maxCollisionRange, maxCollisionRange).foreach(other => {
-				if (other.entity != a.entity) {
-					val (intersection, events) =
-						checkRigidCollision(a, other, delta, lockX, lockY)
+		spatialGrid.getSurrounding(a.position.x, a.position.y).foreach(other => {
+			if (other.entity != a.entity) {
+				val (intersection, events) =
+					checkRigidCollision(a, other, delta, lockX, lockY)
 
-					if (intersection.lengthSquared != 0 && 
-						  colIntersect.lengthSquared < intersection.lengthSquared) {
-						colIntersect = intersection
-						collider = Some(other)
-					}
+				if (intersection.lengthSquared != 0 && 
+					  colIntersect.lengthSquared < intersection.lengthSquared) {
+					colIntersect = intersection
+					collider = Some(other)
 				}
+			}
 		})
 		(colIntersect, collider)
 	}
@@ -205,7 +203,7 @@ class PhysicsSystem(globalForces: Vector[Vec3])
 		}
 	}
 
-	val maxCollisionRange = 30.0f
+	val maxCollisionRange = 90.0f
 
 	def reflection(v: Vec3, n: Vec3): Vec3 = {
 		v - (2 * (v.dot(n)) * n) 
@@ -218,7 +216,8 @@ class PhysicsSystem(globalForces: Vector[Vec3])
 		scene: Scene, 
 		delta: Float, 
 		lockX: Boolean = false,
-		lockY: Boolean = false): Unit = {
+		lockY: Boolean = false,
+		count: Int = 6): Unit = {
 		if (!physObj.static && delta > 0 && !(lockX && lockY)) {
 			val (pointOfCollision, colIntersect, collider) = 
 				findPointOfCollision(physObj, delta, lockX, lockY)
@@ -271,12 +270,15 @@ class PhysicsSystem(globalForces: Vector[Vec3])
 				physObj.velocity -= Vec3((d * d) * physObj.velocity.x.signum, 0, 0)
 			}
 
-			applyPhysics(
-				physObj, 
-				scene, 
-				delta - pointOfCollision, 
-				lockX || (normal.x * physObj.velocity.x < 0), 
-				lockY || (normal.y * physObj.velocity.y < 0))
+			if (count > 0) {
+				applyPhysics(
+					physObj, 
+					scene, 
+					delta - pointOfCollision, 
+					lockX || (normal.x * physObj.velocity.x < 0), 
+					lockY || (normal.y * physObj.velocity.y < 0),
+					count - 1)
+			}
 		}
 	}
 
