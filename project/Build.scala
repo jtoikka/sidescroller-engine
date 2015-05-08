@@ -1,5 +1,7 @@
 import sbt._
 import Keys._
+import sbtassembly.Plugin._
+import AssemblyKeys._
 
 object MyBuild extends Build { 
   val buildOrganization  = "com.myproject"
@@ -39,7 +41,7 @@ object MyBuild extends Build {
       libraryDependencies ++= Seq(argonaut, sprayjson),
       javaOptions += "-Djava.library.path=" + newPath,
       javaOptions += "-XX:MaxGCPauseMillis=4"
-    )
+    ) ++ assemblySettings
   } 
 
   lazy val root = Project(id=rootProjectId, base=file("."), settings=Settings.rootProject)
