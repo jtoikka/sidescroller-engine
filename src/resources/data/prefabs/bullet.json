@@ -9,19 +9,19 @@
 		},
 		{
 			"type":"sprite",
-			"sprite":"0",
-			"spriteSheet":"tiles",
+			"sprite":"cannonball",
+			"spriteSheet":"enemy",
 			"layer":0
 		},
 		{
 			"type":"physics",
-			"velocity": [-80.0, 0.0, 0.0],
+			"velocity": [0.0, 0.0, 0.0],
 			"acceleration": [0.0, 470.88, 0.0],
 			"mass": 0.0,
 			"bounciness": 0.0,
 			"friction": 0.0,
-			"maxHorizontal": 100.0,
-			"maxVertical": 100.0,
+			"maxHorizontal": 1000.0,
+			"maxVertical": 1000.0,
 			"static": false
 		},
 		{
@@ -37,6 +37,10 @@
 					"tag":"damage"
 				}],
 			"oneWay":false
+		},
+		{
+			"type":"damage",
+			"amount":1
 		},
 		{
 			"type":"behaviour",

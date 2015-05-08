@@ -5,12 +5,12 @@
 		{
 			"type":"spatial",
 			"rotation": [1.0, 1.0, 0.0, 0.2],
-			"scale": [2.0, 2.0, 1.0]
+			"scale": [1.0, 1.0, 1.0]
 		},
 		{
 			"type":"sprite",
-			"sprite":"0",
-			"spriteSheet":"tiles",
+			"sprite":"cannon",
+			"spriteSheet":"enemy",
 			"layer":0
 		},
 		{
@@ -47,7 +47,7 @@
 				}
 			],
 			"triggers":[],
-			"oneWay":true
+			"oneWay":false
 		},
 		{
 			"type":"state",

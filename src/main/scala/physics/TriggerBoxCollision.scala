@@ -2,6 +2,9 @@ package physics
 
 import math.Vec2
 
+/**
+  * Extends box collision with trigger info [t] parameter.
+  */
 class TriggerBoxCollision(
 	origin: Vec2, 
 	width: Int, 

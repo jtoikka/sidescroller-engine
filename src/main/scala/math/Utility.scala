@@ -21,7 +21,7 @@ object Utility {
 		)
 	}
 
-	def axisAngle(axis: Vec3, angle: Float) = {
+	def axisAngle(axis: Vec3, angle: Float): Quaternion = {
 		val sinAng = sin(angle/2).toFloat
 		val cosAng = cos(angle/2).toFloat
 		Quaternion(

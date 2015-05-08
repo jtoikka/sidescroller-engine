@@ -4,6 +4,9 @@ import math.Vec3
 import system.Translation
 import org.lwjgl.glfw.GLFW._
 
+/**
+  * Allows an entity to be panned with WASD keys.
+  */
 class PanInput(panSpeed: Float) extends InputReceiver(
 	// Key pressed
 	Map(

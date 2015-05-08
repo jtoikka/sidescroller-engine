@@ -24,6 +24,8 @@ object Component {
 	implicit val InputComp = classOf[InputComponent]
 	implicit val BehaviourComp = classOf[BehaviourComponent]
 	implicit val StateComp = classOf[StateComponent]
+	implicit val DamageComp = classOf[DamageComponent]
+	implicit val HealthComp = classOf[HealthComponent]
 
 /**
   * Returns a bitmask for the given class [c]. The bitmasks allow for fast
@@ -45,6 +47,8 @@ object Component {
 			case InputComp        => 1L << 7
 			case BehaviourComp    => 1L << 8
 			case StateComp        => 1L << 9
+			case DamageComp 		  => 1L << 10
+			case HealthComp 		  => 1L << 11
 			case _ => -1
 		}
 	}
@@ -145,3 +149,15 @@ case class BehaviourComponent(
   */
 case class StateComponent(
 	state: State) extends Component {}
+
+/**
+  * Allows an entity to cause damage.
+  */
+case class DamageComponent(
+	amount: Int) extends Component {}
+
+/**
+  * Gives an entity health. An entity is destroyed when its health reaches 0
+  */
+ case class HealthComponent(
+ 	amount: Int) extends Component {}

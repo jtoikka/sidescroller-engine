@@ -2,6 +2,8 @@ package map
 
 import scala.collection.mutable.ArrayBuffer
 
+
+// Generate random rooms. Testing purposes, not currently used.
 case class Room(x: Int, y: Int, w: Int, h: Int) {
 
 	val linkedRooms = ArrayBuffer[Room]()

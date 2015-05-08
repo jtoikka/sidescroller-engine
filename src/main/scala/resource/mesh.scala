@@ -6,8 +6,9 @@ import org.lwjgl.BufferUtils
 
 object Mesh {
 
-	// This method is temporary! That's why it's okay that it can't handle bad
-	// inputs, and is poorly programmed.
+/**
+  * Load .ply formated meshes.
+  */
 	def apply(filePath: String) = {
 		val lines = Source.fromFile(filePath).getLines().toVector
 
@@ -59,6 +60,9 @@ object Mesh {
 	}
 }
 
+/**
+  * Mesh object.
+  */
 class Mesh(
 		vertexBuffer: java.nio.FloatBuffer, 
 		indexBuffer: java.nio.ShortBuffer,

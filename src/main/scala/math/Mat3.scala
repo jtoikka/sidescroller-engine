@@ -1,10 +1,19 @@
 package math
 
+/**
+  * Mat3 utility functions.
+  */
 object Mat3 {
+/**
+  * Generate 3x3 zero matrix.
+  */
   def apply(): Mat3 = {
     Mat3(0, 0, 0, 0, 0, 0, 0, 0, 0)
   }
 
+/**
+  * Generate 3x3 identity matrix.
+  */
   val identity = {
     Mat3(
       1, 0, 0,
@@ -14,6 +23,9 @@ object Mat3 {
   }
 }
 
+/**
+  * 3x3 matrix class
+  */
 case class Mat3(
     x0: Float, y0: Float, z0: Float,
     x1: Float, y1: Float, z1: Float,
@@ -25,12 +37,18 @@ case class Mat3(
     Vec3(z0, z1, z2)
   )
 
-  def size = 9
+  val size = 9
 
+/**
+  * Matrix as array, rows first.
+  */
   def asArray: Array[Float] = {
     (for (vector <- storage) yield List(vector.x, vector.y, vector.z)).flatten
   }
 
+/**
+  * Get value at index.
+  */
   def apply(index: Int): Vec3 = {
     if (index >= storage.size) {
       throw new IndexOutOfBoundsException
@@ -38,6 +56,9 @@ case class Mat3(
     storage(index)
   }
 
+/**
+  * Get matrix row.
+  */ 
   def row(index: Int): Vec3 = {
     if (index >= storage.size) {
       throw new IndexOutOfBoundsException
@@ -45,6 +66,9 @@ case class Mat3(
     Vec3(storage(0).x, storage(1).y, storage(2).z)
   }
 
+/**
+  * Matrix multiplication with other 3x3 matrix.
+  */
   def *(other: Mat3): Mat3 = {
     val row0 = this.row(0)
     val row1 = this.row(1)
@@ -56,6 +80,9 @@ case class Mat3(
     )
   }
 
+/**
+  * Matrix multiplication with length 3 vector.
+  */
   def *(other: Vec3): Vec3 = {
     val row0 = this.row(0)
     val row1 = this.row(1)

@@ -1,5 +1,8 @@
 package math
 
+/**
+  * 2 length vector.
+  */
 case class Vec2(x: Float, y: Float) {
   def +(other: Vec2) = Vec2(this.x + other.x, this.y + other.y)
   

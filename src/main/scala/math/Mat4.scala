@@ -1,5 +1,8 @@
 package math
 
+/**
+  * 4x4 matrix.
+  */
 case class Mat4(
     x0: Float, y0: Float, z0: Float, w0: Float,
     x1: Float, y1: Float, z1: Float, w1: Float,
@@ -8,7 +11,7 @@ case class Mat4(
 
   def size = 16
 
-  val storage = new Array[Vec4](4)
+  private val storage = new Array[Vec4](4)
     storage(0) = Vec4(x0, x1, x2, x3)
     storage(1) = Vec4(y0, y1, y2, y3)
     storage(2) = Vec4(z0, z1, z2, z3)
@@ -66,10 +69,6 @@ case class Mat4(
     (for (vector <- storage) 
       yield List(vector.x, vector.y, vector.z, vector.w)).flatten
   }
-  
-  // def update(index: Int, vector: Vec4) = {
-  //   storage(index) = vector
-  // }
   
   override def toString() = {
     "[" + this(0)(0) + "][" + this(1)(0) + "][" + this(2)(0) + "][" + this(3)(0) + "]" + "\n" +

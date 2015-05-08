@@ -8,6 +8,9 @@ import math._
 import event._
 import scala.collection.mutable.ArrayBuffer
 
+/**
+  * Button clicking mechanic.
+  */ 
 class ButtonBehaviour(val args: List[String]) extends Behaviour {
 	require(args.length > 0)
 	override def initialize(entity: Entity, scene: Scene): Unit = {
@@ -15,7 +18,8 @@ class ButtonBehaviour(val args: List[String]) extends Behaviour {
 			initialized = true
 		}
 	}
-	
+	// If a cursor event occurs, and mouse 1 is pressed, send an event
+	// (scene change)
 	override def fixedUpdate(entity: Entity, scene: Scene, delta: Float): Changes = {
 		val cursorEvent = entity.privateEvents.find(event => {
 			event match {

@@ -1,0 +1,18 @@
+{
+	"position":[0.0, 0.0, 0.0],
+	"tag":"playerHealth",
+	"components":[
+		{
+			"type":"spatial",
+			"rotation": [0.0, 1.0, 0.0, 0.0],
+			"scale": [1.0, 1.0, 1.0]
+		},
+		{
+			"type":"sprite",
+			"sprite":"container",
+			"spriteSheet":"heart",
+			"layer":0
+		}
+	],
+	"children":[]
+}

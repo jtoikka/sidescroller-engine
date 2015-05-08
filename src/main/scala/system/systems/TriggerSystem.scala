@@ -6,6 +6,10 @@ import entity.Component._
 import physics._
 import event._
 
+/**
+  * Checks collisions between trigger boxes, and sends trigger events when triggers
+  * occur.
+  */
 class TriggerSystem extends System(bitMask(CollisionComp)) {
 
 	def instantiate(scene: Scene): Unit = {}

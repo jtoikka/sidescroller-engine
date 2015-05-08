@@ -4,6 +4,10 @@ import org.lwjgl.glfw.GLFW._
 import scala.collection.mutable.ArrayBuffer
 import math.Vec2
 
+
+/**
+  * Handles inputs.
+  */
 class InputManager {
 	val pressedKeys = ArrayBuffer[Int]()
 	val heldKeys = ArrayBuffer[Int]()
@@ -13,6 +17,9 @@ class InputManager {
 	val mouseReleased = ArrayBuffer[Int]()
 	var cursor = Vec2(0, 0)
 
+/**
+  * Handles a keyboard key action.
+  */
 	def keyAction(key: Int, scancode: Int, action: Int, mods: Int) = {
 		action match {
 			case GLFW_PRESS => {
@@ -28,6 +35,9 @@ class InputManager {
 		}
 	}
 
+/**
+  * Handles a mouse key action.
+  */
 	def mouseAction(button: Int, action: Int, mods: Int) = {
 		action match {
 			case GLFW_PRESS => {
@@ -43,6 +53,9 @@ class InputManager {
 		}
 	}
 
+/**
+  * Gets the handled inputs.
+  */
 	def getInputs: 
 		(Vector[Int], Vector[Int], Vector[Int],
 		 Vector[Int], Vector[Int], Vector[Int], Vec2) = {
@@ -62,6 +75,9 @@ class InputManager {
 		inputs
 	}
 
+/**
+  * Sets the cursor location.
+  */
 	def setCursor(x: Double, y: Double) = {
 		cursor = Vec2(x.toFloat, y.toFloat)
 	}

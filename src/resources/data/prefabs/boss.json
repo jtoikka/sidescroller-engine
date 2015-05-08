@@ -1,0 +1,86 @@
+{
+	"position": [0.0, 0.0, -50.0],
+	"tag":"boss",
+	"components":[
+		{
+			"type":"spatial",
+			"rotation": [1.0, 1.0, 0.0, 0.2],
+			"scale": [1.0, 1.0, 1.0]
+		},
+		{
+			"type":"sprite",
+			"sprite":"standright",
+			"spriteSheet":"bossSprite",
+			"layer":0
+		},
+		{
+			"type":"animation",
+			"animationSheet":"player_anim",
+			"animation":"walk_right",
+			"timer":0.0
+		},
+		{
+			"type":"physics",
+			"velocity": [0.0, 0.0, 0.0],
+			"acceleration": [0.0, 0.0, 0.0],
+			"mass": 1.0,
+			"bounciness": 0.0,
+			"friction": 2.2,
+			"maxHorizontal": 80.0,
+			"maxVertical": 500.0,
+			"static": false
+		},
+		{
+			"type":"collision",
+			"collisionBoxes":[
+				{
+					"type":"box",
+					"origin": [0.0, 0.0],
+					"width": 8.0,
+					"height": 16.0
+				}
+			],
+			"rigidBoxes":[],
+			"triggers":[
+				{
+					"type":"triggerBox",
+					"origin": [0.0, -8.5],
+					"width": 8.0,
+					"height": 0.5,
+					"tag": "groundCheck"
+				}
+			],
+			"oneWay":false
+		},	
+		{
+			"type":"state",
+			"stateMachine":"player"
+		},
+		{
+			"type":"health",
+			"amount":6
+		},
+		{
+			"type":"behaviour",
+			"behaviours":[
+				{
+					"type":"jump",
+					"parameters":["60", "65"]
+				},
+				{
+					"type":"shoot",
+					"parameters":[]
+				},
+				{
+					"type":"bossAI",
+					"parameters":[]
+				},
+				{
+					"type":"takeDamage",
+					"parameters":[]
+				}
+			]
+		}
+	],
+	"children":[]
+}

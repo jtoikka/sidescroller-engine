@@ -1,0 +1,27 @@
+{
+	"position":[0.0, 0.0, 0.0],
+	"tag":"playerHealth",
+	"components":[
+		{
+			"type":"spatial",
+			"rotation": [0.0, 1.0, 0.0, 0.0],
+			"scale": [1.0, 1.0, 1.0]
+		},
+		{
+			"type":"sprite",
+			"sprite":"6",
+			"spriteSheet":"heart",
+			"layer":0
+		},
+		{
+			"type":"behaviour",
+			"behaviours":[
+				{
+					"type":"playerHealth",
+					"parameters":["changeScene", "menu", "0"]
+				}
+			]
+		}
+	],
+	"children":[]
+}

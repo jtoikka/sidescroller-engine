@@ -3,7 +3,9 @@ package render
 import math.{Mat3, Mat4}
 
 object Camera {
-
+/**
+  * Creates a 3x3 orthographic projection matrix.
+  */
   def orthographicProjection3(
       left: Float, right: Float,
       bottom: Float, top: Float) = {
@@ -14,6 +16,9 @@ object Camera {
     )
   }
 
+/**
+  * Creates a 4x4 orthographic projection matrix.
+  */
   def orthographicProjection4(
   		left: Float, right: Float,
   		bottom: Float, top: Float,
@@ -25,12 +30,18 @@ object Camera {
   		0.0f, 0.0f, 0.0f, 1.0f)
   }
 
+/**
+  * Calculates frustum scale from degrees.
+  */
   def calcFrustumScale(fovDegrees: Float): Float = {
     val degToRadians = scala.math.Pi * 2.0f / 360.0f
     var fovRad = fovDegrees * degToRadians
     1.0f / scala.math.tan(fovRad / 2.0f).toFloat;
   }
 
+/**
+  * Creates a 4x4 perspective projection matrix.
+  */
   def perspectiveProjection(
     width: Float, height: Float, 
     fieldOfView: Float, 

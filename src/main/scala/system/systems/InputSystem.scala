@@ -8,6 +8,10 @@ import scene.Scene
 import input._
 import math.Vec2
 
+
+/**
+  * Applies inputs to entities. 
+  */
 class InputSystem extends System(bitMask(InputComp)) {
 	var pressedKeys = Vector[Int]()
 	var heldKeys = Vector[Int]()
@@ -18,7 +22,10 @@ class InputSystem extends System(bitMask(InputComp)) {
 	var cursor = Vec2(0, 0)
 
 
-	// The values need to be moved elsewhere
+/**
+  * Map InputsReceivers. Currently parameters are hard-coded.
+  * TODO: load from file
+  */
 	val inputReceivers = Map(
 		"pan" -> new PanInput(32.0f),
 		"playerGround" -> new PlayerInputGround(40.0f * 4.8f * 2),
@@ -29,12 +36,16 @@ class InputSystem extends System(bitMask(InputComp)) {
 
 	def instantiate(scene: Scene) = {}
 
+/**
+  * Applies inputs to entity, and returns resulting changes.
+  */
 	def applyTo(
 			entity: Entity,
 			scene: Scene,
 			delta: Float): Changes = {
 		entity(InputComp) match {
 			case Some(InputComponent(id)) => {
+				// TODO: minimize code repetition
 				val receiver = inputReceivers(id)
 				val pressedChanges = receiver.keyPressedCallbacks.filter(pair => {
 					pressedKeys.contains(pair._1)

@@ -6,6 +6,9 @@ object Vec3 {
   }
 }
 
+/**
+  * 3 length vector
+  */
 case class Vec3(x: Float, y: Float, z: Float) {
   def +(other: Vec3) = 
     Vec3(this.x + other.x, this.y + other.y, this.z + other.z)

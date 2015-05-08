@@ -4,6 +4,10 @@ import entity.Entity
 import entity.Component._
 import entity._
 
+/**
+  * Sets an animation cycle for an entity. Sets [nameLeft] if facingLeft is true,
+  * [nameRight] if not.
+  */
 case class SetAnimation(nameRight: String, nameLeft: String) extends StateChange {
 	def applyTo(entity: Entity): Unit = {
 		if (entity.contains(AnimationComp)) {

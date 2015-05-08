@@ -8,6 +8,9 @@ import math._
 import event._
 import scala.collection.mutable.ArrayBuffer
 
+/**
+  * Trigger a scene load event if the player collides with the entity.
+  */
 class LevelTriggerBehaviour(val args: List[String]) extends Behaviour {
 	require(args.length > 0)
 	override def initialize(entity: Entity, scene: Scene): Unit = {
@@ -25,9 +28,8 @@ class LevelTriggerBehaviour(val args: List[String]) extends Behaviour {
 		})
 		val events = ArrayBuffer[Event]()
 		if (playerEvent.isDefined) {
-			println("Aww yeah")
 			require(args.length >= 2)
-			events += SceneChangeEvent(false, args(0), args(1))
+			events += SceneLoadEvent(false, args(0).toInt, args(1).toInt)
 		}
 		Changes(entity, Vector(), events.toVector)
 	}

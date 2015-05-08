@@ -3,13 +3,19 @@ package state
 import system._
 import entity.Component._
 
-
+/**
+  * The player state machine. Moves player between states when certain conditions
+  * are met (see the triggers). The main purpose is to set animation states,
+  * but aspects such as InputReceivers and friction multipliers are also
+  * modified.
+  */
 class PlayerStateMachine extends StateMachine {
 	val anyState = AnyState(
 		Vector()
 	)
 
 /*- Triggers -----------------------------------------------------------------*/
+
 	lazy val onGroundMovingTrigger = new Trigger(
 		{e => {
 			e(PhysicsComp) match {
@@ -74,7 +80,8 @@ class PlayerStateMachine extends StateMachine {
 	)
 
 	lazy val stationaryTrigger = new Trigger(
-		{e => !e.flags("movingLeft") && !e.flags("movingRight") || e.flags("movingLeft") && e.flags("movingRight")}, onGround
+		{e => !e.flags("movingLeft") && !e.flags("movingRight") || 
+		 e.flags("movingLeft") && e.flags("movingRight")}, onGround
 	)
 /*----------------------------------------------------------------------------*/
 

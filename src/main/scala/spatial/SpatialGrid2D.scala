@@ -4,6 +4,9 @@ import scala.collection.mutable.ArrayBuffer
 import math.Vec3
 import scala.math._
 
+/**
+  * Exception if trying to move invalid entities.
+  */
 class SpatialGridException(message: String) extends Exception(message) {}
 
 class SpatialGrid2D[T <: Spatial](
@@ -37,6 +40,7 @@ class SpatialGrid2D[T <: Spatial](
 			true
 		} else {
 			outOfBounds += elem
+			println("Out of bounds")
 			false
 		}
 	}
@@ -111,7 +115,6 @@ class SpatialGrid2D[T <: Spatial](
 	* @param h height
 	* @return All elements in the given range
   */ 
-
 	def getInRange(x: Float, y: Float, w: Float, h: Float): Vector[T] = {
 		val temp = for (
 			i <- max(x, 0) to min(x + w + cellWidth, width - 1) by cellWidth;
@@ -124,20 +127,20 @@ class SpatialGrid2D[T <: Spatial](
 			outOfBounds
 	}
 
-	def getBelow(i: Int): Int = i - columns
+	private def getBelow(i: Int): Int = i - columns
 
-	def getAbove(i: Int): Int = {
+	private def getAbove(i: Int): Int = {
 		val n = i + columns
 		if (n >= grid.size) -1
 		else n
 	}
 
-	def getRight(i: Int): Int = {
+	private def getRight(i: Int): Int = {
 		if (i % columns == columns - 1) -1
 		else i + 1
 	}
 
-	def getLeft(i: Int): Int = {
+	private def getLeft(i: Int): Int = {
 		if (i % columns == 0) -1
 		else i - 1
 	}

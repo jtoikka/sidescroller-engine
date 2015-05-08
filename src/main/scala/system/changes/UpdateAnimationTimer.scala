@@ -4,6 +4,9 @@ import entity.Entity
 import entity.Component._
 import entity._
 
+/**
+  * Increases an entity's animation timer by delta.
+  */
 case class UpdateAnimationTimer(delta: Float) extends StateChange {
 	def applyTo(entity: Entity): Unit = {
 		if (entity.contains(AnimationComp)) {

@@ -52,6 +52,13 @@
 					"width": 8.0,
 					"height": 0.5,
 					"tag": "groundCheck"
+				},
+				{
+					"type":"triggerBox",
+					"origin":[0.0, 0.0],
+					"width":8.0,
+					"height":16.0,
+					"tag":"hurtBox"
 				}
 			],
 			"oneWay":false
@@ -61,14 +68,22 @@
 			"stateMachine":"player"
 		},
 		{
+			"type":"health",
+			"amount":6
+		},
+		{
 			"type":"behaviour",
 			"behaviours":[
 				{
 					"type":"jump",
-					"parameters":[]
+					"parameters":["60", "50"]
 				},
 				{
 					"type":"shoot",
+					"parameters":[]
+				},
+				{
+					"type":"takeDamage",
 					"parameters":[]
 				}
 			]

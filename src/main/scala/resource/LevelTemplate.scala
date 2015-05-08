@@ -10,6 +10,9 @@ import map._
 import scala.collection.mutable.ArrayBuffer
 import entity.Entity
 
+/**
+  * A level template can be turned into collision data for a level.
+  */
 class LevelTemplate(src: String) extends Resource {
 
 	protected case class Block(x: Short, y: Short, w: Short, h: Short, t: Short)
@@ -17,6 +20,7 @@ class LevelTemplate(src: String) extends Resource {
 	var width = 0
 	var height = 0
 
+/* Parameters from level editor --------------------------------------------- */
 	val paddingTop = 2
 	val paddingBottom = 3
 	val paddingLeft = 2
@@ -29,18 +33,30 @@ class LevelTemplate(src: String) extends Resource {
 
 	val numDivisionsW = 6
 	val numDivisionH = 5
+/* -------------------------------------------------------------------------- */
 
+/**
+  * Read blocks from binary file. The format is as follows:
+  * - 4 bytes for version info
+  * - 2 bytes for level width
+  * - 2 bytes for level height
+  * - 4 bytes for number of blocks
+  * - 10 bytes per number of block
+  * - 4 bytes for number of pass-through blocks
+  * - 10 bytes per number of pass-through block
+  */
 	val blocks = {
 		val byteArray = Files.readAllBytes(Paths.get(src))
 		val buf = java.nio.ByteBuffer.allocate(byteArray.size)
 		buf.put(byteArray)
 		buf.flip()
+
 		val version = (buf.get, buf.get, buf.get, buf.get)
-		println("Version: " + version)
+
 		width = buf.getShort.toInt
 		height = buf.getShort.toInt
+
 		val numBlocks = buf.getInt
-		println("Num blocks: " + numBlocks)
 		val solid = for (i <- 0 until numBlocks) yield {
 			val x = buf.getShort
 			val y = buf.getShort
@@ -49,6 +65,7 @@ class LevelTemplate(src: String) extends Resource {
 			val t = buf.getShort
 			Block(x, y, w, h, t)
 		}
+
 		val numPass = buf.getInt
 		val pass = for (i <- 0 until numPass) yield {
 			val x = buf.getShort
@@ -62,6 +79,9 @@ class LevelTemplate(src: String) extends Resource {
 		(solid, pass)
 	}
 
+/**
+  * Transform blocks into entities, and add level visuals [tiledMap].
+  */
 	def toEntities(resourceManager: ResourceManager, tiledMap: String): Vector[Entity] = {
 		resourceManager.getTiledMap(tiledMap) // Ensures the tiled map gets loaded
 
@@ -80,71 +100,9 @@ class LevelTemplate(src: String) extends Resource {
 				block.w * tileSize,
 				block.h * tileSize, 
 				block.t)
-		}) ++ Vector(EntityFactory.createLevelVisuals(tiledMap, "tileSheet", Vec3(2*16, 3*16, 0)))
+		}) ++ 
+		Vector(
+			EntityFactory.createLevelVisuals(tiledMap, "tileSheet", Vec3(2*16, 3*16, 0))
+		) ++ resourceManager.getLevelEntities(tiledMap) 
 	}
-
-	//Temporary
-	def toScene(resourceManager: ResourceManager, tiledMap: String): Scene = {
-		val origin = Vec2(
-			(numTilesW/2.0f) * tileSize,
-			(numTilesH/2.0f + (paddingBottom - paddingTop) / 2.0f) * tileSize
-		)
-		val pixelsWide = tileSize * width * numTilesW
-		val pixelsTall = tileSize * height * numTilesH
-		val scene = new Scene(
-			pixelsWide, 
-			pixelsTall,  
-			numDivisionsW * width,
-			numDivisionH * height,
-			Vector(
-				new InputSystem(),
-        new PhysicsSystem(Vector(Vec3(0, -9.81f * 16 * 3, 0))),
-        new BehaviourSystem(),
-        new StateSystem(),
-        new AnimationSystem(resourceManager)
-      ),
-      EntityFactory.createCamera(
-      	Vec3(origin, 0),
-      	832/2, 480/2, 0.1f, 1000.0f
-      )
-		)
-		val testPlayer0 = resourceManager.getPrefab("player", Vec3(4 * tileSize, 160, -50))
-
-		// left wall
-		// for (j <- 0 until room.h) {
-		// 	scene.addEntity(EntityFactory.createBlock(0, 12 * tileSize + 15 * j * tileSize, 3 * tileSize, 4 * tileSize, 1))
-		// }
-
-
-
-		// val testTurret = resourceManager.getPrefab("turret", Vec3(296, 144, -50))
-
-		scene.addEntity(testPlayer0)
-		// scene.addEntity(testTurret)
-		blocks._1.foreach(block => {
-			scene.addEntity(
-				EntityFactory.createBlock(
-					block.x * tileSize,
-					block.y * tileSize,
-					block.w * tileSize,
-					block.h * tileSize, 
-					block.t))
-		})
-		blocks._2.foreach(block => {
-			scene.addEntity(
-				EntityFactory.createPassBlock(
-					block.x * tileSize,
-					block.y * tileSize,
-					block.w * tileSize,
-					block.h * tileSize, 
-					block.t))
-			})
-		scene
-	}
-
-	// Level format TODO:
-	/*
-	 * + Add physics parameters? 
-	 * + Add spawn points
-	 */
 }

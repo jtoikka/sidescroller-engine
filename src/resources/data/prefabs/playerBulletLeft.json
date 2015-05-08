@@ -9,8 +9,8 @@
 		},
 		{
 			"type":"sprite",
-			"sprite":"0",
-			"spriteSheet":"tiles",
+			"sprite":"cannonball",
+			"spriteSheet":"enemy",
 			"layer":0
 		},
 		{
@@ -37,6 +37,10 @@
 					"tag":"damage"
 				}],
 			"oneWay":false
+		},
+		{
+			"type":"damage",
+			"amount":1
 		},
 		{
 			"type":"behaviour",

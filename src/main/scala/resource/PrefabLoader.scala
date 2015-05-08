@@ -56,6 +56,7 @@ object PrefabLoader extends DefaultJsonProtocol {
 				case Seq(behaviourType, parameters) => {
 					val id = behaviourType.convertTo[String]
 					val params = parameters.convertTo[List[String]]
+					println("Params: " + params)
 					BehaviourManager.createBehaviour(id, params)
 				}
 			}
@@ -179,6 +180,8 @@ object PrefabLoader extends DefaultJsonProtocol {
 	implicit lazy val animationFormat = jsonFormat3(AnimationComponent)
 	implicit lazy val inputFormat = jsonFormat1(InputComponent)
 	implicit lazy val behaviourFormat = jsonFormat1(BehaviourComponent)
+	implicit lazy val damageFormat = jsonFormat1(DamageComponent)
+	implicit lazy val healthFormat = jsonFormat1(HealthComponent)
 
 	implicit object StateJsonFormat extends JsonFormat[StateComponent] {
 		def write(stateComponent: StateComponent) = {
@@ -228,6 +231,8 @@ object PrefabLoader extends DefaultJsonProtocol {
 				case "input" => value.convertTo[InputComponent]
 				case "behaviour" => value.convertTo[BehaviourComponent]
 				case "state" => value.convertTo[StateComponent]
+				case "damage" => value.convertTo[DamageComponent]
+				case "health" => value.convertTo[HealthComponent]
 				case  _ => throw new Exception("Invalid component: " + t)
 			}
 		}

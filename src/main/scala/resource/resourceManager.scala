@@ -14,6 +14,7 @@ import java.io.File
 import javax.imageio.ImageIO
 
 import math.Vec3
+import math.Vec2
 
 class ResourceLoadException(message: String) extends Exception(message) {}
 
@@ -29,6 +30,7 @@ class ResourceManager(directory: String) {
 	private val ShaderDir = "shaders"
 	private val TemplateDir = "templates"
 	private val TiledMapDir = "tiledMap"
+	private val LevelEntitiesDir = "levelEntities"
 
 	private def getFilesInFolder[T](folder: String): Map[String, Option[T]]= {
 		println("Getting files in folder: " + folder)
@@ -49,6 +51,7 @@ class ResourceManager(directory: String) {
 	private val shaderPrograms = Map[String, ShaderProgram]()
 	private val templates = getFilesInFolder[LevelTemplate](TemplateDir)
  	private val tiledMaps = getFilesInFolder[TiledMap](TiledMapDir)
+ 	private val levelEntities = getFilesInFolder[LevelEntities](LevelEntitiesDir)
 
 	def getTexture(name: String): Texture = {
 		val fullName = if (name.split('.').size > 1) name else name + ".png"
@@ -189,7 +192,27 @@ class ResourceManager(directory: String) {
 				}
 			}
 		} else {
-			throw new ResourceLoadException("Animation " + name + " does not exist.")
+			throw new ResourceLoadException("Tiled Map " + name + " does not exist.")
+		}
+	}
+
+	def getLevelEntities(name: String): Vector[Entity] = {
+		val fullName = name + ".json"
+		if (levelEntities.contains(fullName)) {
+			val ents = levelEntities(fullName)
+			val levelEnts = ents match {
+				case Some(s) => s
+				case None => {
+					val s = loadLevelEntities(directory + LevelEntitiesDir + "/" + fullName)
+					levelEntities(fullName) = Some(s)
+					s
+				}
+			}
+			levelEnts.seeds.map(seed => {
+				getPrefab(seed._1, Vec3(seed._2, -50.0f))
+			})
+		} else {
+			throw new ResourceLoadException("Level Entities " + name + " does not exist.")
 		}
 	}
 
@@ -203,6 +226,10 @@ class ResourceManager(directory: String) {
         throw new ResourceLoadException("Texture " + filePath + " does not exist.")
       }
     }
+	}
+
+	private def loadLevelEntities(filePath: String): LevelEntities = {
+		LevelEntities(filePath)
 	}
 
 	private def loadSpriteSheet(filePath: String): SpriteSheet = {

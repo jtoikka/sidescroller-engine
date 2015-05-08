@@ -122,7 +122,7 @@ object Main extends App with Listener {
     val menuScene = SceneFactory.createMenu(resourceManager)
     val gameScene = SceneFactory.createGame(resourceManager)
 
-    inactiveScenes("game") = gameScene
+    inactiveScenes("0") = gameScene
     activeScenes("menu") = menuScene
  
     // Set the clear color
@@ -141,6 +141,7 @@ object Main extends App with Listener {
   def handleEvents(): Unit = {
     for (event <- events) {
       event match {
+        // Flips the position of two scenes (one from active, the other from inactive)
         case e: SceneChangeEvent => {
           activeScenes(e.activate) = inactiveScenes(e.activate)
           inactiveScenes.remove(e.activate)
@@ -148,9 +149,28 @@ object Main extends App with Listener {
           activeScenes.remove(e.inactivate)
           println("handeled")
         }
+        // Loads a scene, and moves the player from the old scene to the new scene.
+        case e: SceneLoadEvent => {
+          if (!activeScenes.contains(e.replace.toString)) {
+            val toRemove = activeScenes(e.remove.toString)
+            val player = toRemove.entities.find(ent => ent.tag == "player").get
+            val playerPos = player.position
+            if (playerPos.x < 10.0f * 16.0f) {
+              player.position = Vec3(28.0f * 16.0f, playerPos.y, playerPos.z)
+            } else {
+              player.position = Vec3(2.0f * 16.0f, playerPos.y, playerPos.z)
+            }
+            val camera = toRemove.camera
+            val systems = toRemove.systems
+            val newScene = SceneFactory.loadRoom(resourceManager, systems, camera, e.replace, player)
+            activeScenes(e.replace.toString) = newScene
+            activeScenes.remove(e.remove.toString)
+          }
+        }
+        // Spawns a new entity
         case e: EntitySpawnEvent => {
           val ent = resourceManager.getPrefab(e.prefab, e.position)
-          // TODO: modifications
+          e.modifications.foreach(mod => mod.applyTo(ent))
           e.scene.addEntity(ent)
         }
       }
@@ -170,57 +190,79 @@ object Main extends App with Listener {
     var longestTotal = 0.0
     var frameAccumulator = 0.0
     while (glfwWindowShouldClose(window) == GL_FALSE) {
-      val frameStart = System.nanoTime()
+      val frameStart = System.nanoTime() // For performance logging
 
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT) // clear the framebuffer
 
       val delta = glfwGetTime()
       glfwSetTime(0)
 
+      // Stores how much time has accumulated, and determines how many updates
+      // need to be run.
       frameAccumulator += delta
+
+      // Drop frames if too many are accumulated
+      val FrameLimit = 2
+      // If more than 10 frames, drop all frames
+      if (frameAccumulator > 1.0/60.0 * 10) {
+        frameAccumulator = 0
+      } else if (frameAccumulator > 1.0/60.0 * FrameLimit) {
+        frameAccumulator = 1.0/60.0 * FrameLimit
+      }
 
       val FrameDuration = 1.0/60.0
 
       // fixed update
       while(frameAccumulator >= FrameDuration) {
-        val before = System.nanoTime()
-        glfwGetCursorPos(window, xPos, yPos)
-        val x = xPos.get(0)
+        val before = System.nanoTime() // For performance logging
+
+        glfwGetCursorPos(window, xPos, yPos) // Check cursor position
+        val x = xPos.get(0) 
         val y = HEIGHT - yPos.get(0)
         inputManager.setCursor(x, y)
+
         frameAccumulator -= FrameDuration
-        val inputs = inputManager.getInputs
+
+        // Get inputs and forward them to the active scene
+        val inputs = inputManager.getInputs 
         activeScenes.values.foreach(
           _.setInputs(
             inputs._1, inputs._2, inputs._3,
             inputs._4, inputs._5, inputs._6,
             inputs._7)
         )
+        // Update all active scenes
         activeScenes.values.foreach(
           _.update(FrameDuration.toFloat, eventManager)
         )
+        // Handle received events
         handleEvents()
-        val after = System.nanoTime()
-        longestFrame = scala.math.max(longestFrame, (after - before) / 1000000.0)
+
+        val after = System.nanoTime() // for performance logging
+        longestFrame = scala.math.max(longestFrame, (after - before) / 1000000.0) // for performance logging
       }
       val before = System.nanoTime()
       activeScenes.values.foreach(renderer.renderScene(_, resourceManager))
       val after = System.nanoTime()
 
-      longestRender = scala.math.max(longestRender, (after - before) / 1000000.0)
+      longestRender = scala.math.max(longestRender, (after - before) / 1000000.0) // for performance logging
 
       // Print frame rate
       timer += delta
       frameCount += 1
       // longestFrame = scala.math.max(delta, 0)
 
-      val frameEnd = System.nanoTime()
+      val frameEnd = System.nanoTime() // for performance logging
 
+      // Update the window
       glfwSwapBuffers(window)
+
+      // Poll input
       glfwPollEvents()
 
-      longestTotal = scala.math.max(longestTotal, (frameEnd - frameStart) / 1000000.0)
+      longestTotal = scala.math.max(longestTotal, (frameEnd - frameStart) / 1000000.0) // for performance logging
 
+      // Print performance information once every second.
       if (timer > 1) {
         println("FPS: " + frameCount)
         timer -= 1

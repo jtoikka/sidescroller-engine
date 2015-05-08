@@ -5,7 +5,14 @@ import entity._
 import scene.Scene
 import state._
 
+/**
+  * Runs behaviours attached to entities.
+  */
 class BehaviourSystem extends System(bitMask(BehaviourComp)) {
+
+/**
+  * Initialize behaviours for an entity.
+  */
 	def instantiate(scene: Scene) = {
 		scene.entities.foreach(e => {
 			e(BehaviourComp) match {
@@ -19,6 +26,9 @@ class BehaviourSystem extends System(bitMask(BehaviourComp)) {
 		})
 	}
 
+/**
+  * Apply update method of entity's behaviours to entity. 
+  */
 	def applyTo(entity: Entity, scene: Scene, delta: Float): Changes = {
 		entity(BehaviourComp) match {
 			case Some(BehaviourComponent(behaviours)) => {

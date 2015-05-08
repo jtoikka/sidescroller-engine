@@ -1,5 +1,8 @@
 package math
 
+/**
+  * 4 length vector
+  */
 case class Vec4(x: Float, y: Float, z: Float, w: Float) {
   def +(other: Vec4) = 
     Vec4(this.x + other.x, this.y + other.y, this.z + other.z, this.w + other.w)
@@ -24,14 +27,6 @@ case class Vec4(x: Float, y: Float, z: Float, w: Float) {
   
   def dot(other: Vec4): Float = 
     this.x * other.x + this.y * other.y + this.z * other.z + this.w * other.w
-    
-  // def cross(other: Vec4) = 
-  //  Vec4(
-  //    this.y * other.z - this.z * other.y,
-  //    this.z * other.x - this.x * other.z,
-  //    this.x * other.y - this.y * other.x,
-  //    this.w * other.w -
-  //  )
 
   def apply(i: Int) = {
     i match {

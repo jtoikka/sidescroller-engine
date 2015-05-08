@@ -36,7 +36,7 @@
 			"behaviours":[
 				{
 					"type":"button",
-					"parameters":["changeScene", "menu", "game"]
+					"parameters":["changeScene", "menu", "0"]
 				}
 			]
 		}

@@ -4,6 +4,9 @@ import system.StateChange
 import entity.Entity
 import math._
 
+/**
+  * A base input receiver. Provided callbacks give functionality to entities.
+  */
 case class InputReceiver(
 	keyPressedCallbacks: Map[Int, (Float, Entity) => StateChange] = Map(),
 	keyHeldCallbacks: Map[Int, (Float, Entity) => StateChange] = Map(),

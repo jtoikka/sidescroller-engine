@@ -8,6 +8,9 @@ import math._
 import event._
 import event.EntitySpawnEvent
 
+/**
+  * If a collision occurs with a physical object, destroy the entity.
+  */
 class DestroyOnCollision(val args: List[String]) extends Behaviour {
 	override def initialize(entity: Entity, scene: Scene): Unit = {
 		if (!initialized) {
